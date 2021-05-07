@@ -1,0 +1,10 @@
+clase entity
+
+jerarquias de entidades
+
+calse world
+
+poner unas cuantas cosas para probar, algunas se renderizan y otras no
+
+provar cosas nuevas
+
