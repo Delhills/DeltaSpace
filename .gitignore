@@ -3,5 +3,11 @@
 .ipdb
 .pdb
 .db
+.d
+.ipch
+.opendb
+.DS_store
 visualstudio/visualstudio/Debug
 visualstudio/visualstudio/Release
+*.ipch
+*.db
