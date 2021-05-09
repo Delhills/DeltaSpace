@@ -76,27 +76,27 @@ void Game::render(void)
 	glDisable(GL_CULL_FACE);
    
 	//create model matrix for cube
-	Matrix44 m;
-	m.rotate(angle*DEG2RAD, Vector3(0, 1, 0));
+	//Matrix44 m;
+	//m.rotate(angle*DEG2RAD, Vector3(0, 1, 0));
+	World::instance->render();
+	//if(shader)
+	//{
+	//	//enable shader
+	//	shader->enable();
 
-	if(shader)
-	{
-		//enable shader
-		shader->enable();
+	//	//upload uniforms
+	//	shader->setUniform("u_color", Vector4(1,1,1,1));
+	//	shader->setUniform("u_viewprojection", camera->viewprojection_matrix );
+	//	shader->setUniform("u_texture", texture, 0);
+	//	shader->setUniform("u_model", m);
+	//	shader->setUniform("u_time", time);
 
-		//upload uniforms
-		shader->setUniform("u_color", Vector4(1,1,1,1));
-		shader->setUniform("u_viewprojection", camera->viewprojection_matrix );
-		shader->setUniform("u_texture", texture, 0);
-		shader->setUniform("u_model", m);
-		shader->setUniform("u_time", time);
+	//	//do the draw call
+	//	mesh->render( GL_TRIANGLES );
 
-		//do the draw call
-		mesh->render( GL_TRIANGLES );
-
-		//disable shader
-		shader->disable();
-	}
+	//	//disable shader
+	//	shader->disable();
+	//}
 
 	//Draw the floor grid
 	drawGrid();
