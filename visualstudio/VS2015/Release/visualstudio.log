@@ -1,0 +1,8 @@
+﻿  game.cpp
+C:\Users\Daniel\Desktop\UNI\3\3r Trimeste\Jocs electronics\entrega2\git\src\framework.h(373,105): warning C4244: 'return': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\Daniel\Desktop\UNI\3\3r Trimeste\Jocs electronics\entrega2\git\src\game.cpp(113,14): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\Daniel\Desktop\UNI\3\3r Trimeste\Jocs electronics\entrega2\git\src\game.cpp(176,40): warning C4244: '*=': conversión de 'double' a 'float'; posible pérdida de datos
+LINK : warning LNK4098: la biblioteca predeterminada'LIBCMT' entra en conflicto con otras bibliotecas; use la biblioteca /NODEFAULTLIB:biblioteca
+game.obj : error LNK2001: símbolo externo "public: static class World * World::instance" (?instance@World@@2PAV1@A) sin resolver
+game.obj : error LNK2001: símbolo externo "public: void __thiscall World::render(void)" (?render@World@@QAEXXZ) sin resolver
+..\..\game.exe : fatal error LNK1120: 2 externos sin resolver
