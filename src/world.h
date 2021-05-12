@@ -1,7 +1,6 @@
 #ifndef WORLD_H
 #define WORLD_H
 #include "includes.h"
-#include "game.h"
 #include "mesh.h"
 #include "texture.h"
 #include "shader.h"
@@ -22,7 +21,16 @@ public:
 	std::string name;
 
 	virtual void render() {};
-	//virtual void update(float elapsed_time);
+	virtual void update(float elapsed_time) {};
+
+	Entity* parent;
+
+	//pointers to my children
+	std::vector<Entity*> children;
+
+	//methods
+	void addChild(Entity* ent);
+	void removeChild(Entity* ent);
 
 	//Vector3 getPosition();
 };
@@ -36,7 +44,7 @@ public:
 	Vector4 color;
 
 	void render();
-	//void update(float dt);
+	void update(float dt);
 };
 
 class World
@@ -46,8 +54,10 @@ public:
 	static World* instance;
 
 	World();
-	std::vector<Entity*> entities;
+	Entity root;
 
+	void render();
+	void update();
 	//void clear();
 	//void addEntity(Entity* entity);
 
