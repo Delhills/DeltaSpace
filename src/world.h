@@ -1,10 +1,12 @@
+
 #ifndef WORLD_H
 #define WORLD_H
 #include "includes.h"
 #include "mesh.h"
 #include "texture.h"
 #include "shader.h"
-
+#include "camera.h"
+extern float mouse_speed;
 
 enum eEntityType {
 	NONE = 0,
@@ -54,10 +56,10 @@ public:
 	static World* instance;
 
 	World();
-	Entity root;
-
+	EntityMesh root;
+	Camera* camera; //our global camera
 	void render();
-	void update();
+	void update(double seconds_elapsed);
 	//void clear();
 	//void addEntity(Entity* entity);
 
