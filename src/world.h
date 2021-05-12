@@ -41,7 +41,7 @@ public:
 
 class World
 {
-public: 
+public:
 
 	static World* instance;
 

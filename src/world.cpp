@@ -2,10 +2,10 @@
 
 
 Entity::Entity() {
-	entity_type = NONE;
+    entity_type = NONE;
 }
 
-void EntityMesh::render(){
+void EntityMesh::render() {
     Camera* camera = Camera::current;
     Matrix44 model = this->model;
 
