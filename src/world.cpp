@@ -41,16 +41,12 @@ World* World::instance = NULL;
 World::World() {
 	instance = this;
 
-	islas[0] = new EntityMesh();
-	islas[0]->model = Matrix44();
-	islas[0]->texture = Texture::Get("data/island_color.tga");
-	islas[0]->mesh = Mesh::Get("data/island.ASE");
-	islas[0]->shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
-	islas[0]->color = Vector4(1, 1, 1, 1);
-	islas[0]->model.scale(1.5f, 1.5f, 1.5f);
-
-	//islas[1]->model.setTranslation(0, -30, 0);
-
+	root = EntityMesh();
+	root.model = Matrix44();
+	root.texture = Texture::Get("data/texture.tga");
+	root.mesh = Mesh::Get("data/box.ASE");
+	root.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+	root.color = Vector4(1, 1, 1, 1);
 
 	//create our camera
 	this->camera = new Camera();
@@ -60,43 +56,7 @@ World::World() {
 
 void World::render() {
 	camera->enable();
-	//islas[0]->render();
-	renderIslands();
-}
-
-void World::renderIslands() {
-	Camera* camera = Camera::current;
-	//Matrix44 model = islas[0]->model;
-
-	Shader* shader = islas[0]->shader;
-
-	Mesh* mesh = islas[0]->mesh;
-	Texture* texture = islas[0]->texture;
-	Vector4 color = islas[0]->color;
-
-	//enable shader and pass uniforms
-	shader->enable();
-	//shader->setUniform("u_model", model);
-	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-	shader->setTexture("u_texture", texture, 0);
-	shader->setUniform("u_color", color);
-
-	Vector3 padding = mesh->box.halfsize;
-
-	//render the mesh using the shader
-	for (size_t i = 0; i < 10; i++)
-	{
-		for (size_t j = 0; j < 10; j++)
-		{
-			Matrix44 model;
-			model.setTranslation(i * padding.x, 0, j * padding.z);
-			shader->setUniform("u_model", model);
-			mesh->render(GL_TRIANGLES);
-		}
-	}
-
-	//disable the shader after finishing rendering
-	shader->disable();
+	root.render();
 
 }
 

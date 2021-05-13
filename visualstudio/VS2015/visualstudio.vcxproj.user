@@ -15,7 +15,4 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <RemoteDebuggerWorkingDirectory />
   </PropertyGroup>
-  <PropertyGroup>
-    <ShowAllFiles>false</ShowAllFiles>
-  </PropertyGroup>
 </Project>
