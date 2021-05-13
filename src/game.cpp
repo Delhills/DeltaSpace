@@ -109,7 +109,7 @@ void Game::render(void)
 
 void Game::update(double seconds_elapsed)
 {
-	world->update( seconds_elapsed);
+	world->update(seconds_elapsed);
 }
 
 //Keyboard event handler (sync input)

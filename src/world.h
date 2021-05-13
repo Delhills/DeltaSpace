@@ -34,6 +34,9 @@ public:
 	void addChild(Entity* ent);
 	void removeChild(Entity* ent);
 
+	virtual void configure() {}
+
+
 	//Vector3 getPosition();
 };
 
@@ -56,9 +59,10 @@ public:
 	static World* instance;
 
 	World();
-	EntityMesh root;
+	EntityMesh* islas[2];;
 	Camera* camera; //our global camera
 	void render();
+	void renderIslands();
 	void update(double seconds_elapsed);
 	//void clear();
 	//void addEntity(Entity* entity);
