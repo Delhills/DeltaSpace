@@ -6,48 +6,10 @@
 #include "texture.h"
 #include "shader.h"
 #include "camera.h"
+#include "entities.h"
+#include "player.h"
+
 extern float mouse_speed;
-
-enum eEntityType {
-	NONE = 0,
-	ENTITY_MESH = 1,
-};
-
-class Entity {
-public:
-	Entity();
-	//virtual ~Entity(); //destructor
-
-	eEntityType entity_type;
-	Matrix44 model;
-	std::string name;
-
-	virtual void render() {};
-	virtual void update(float elapsed_time) {};
-
-	Entity* parent;
-
-	//pointers to my children
-	std::vector<Entity*> children;
-
-	//methods
-	void addChild(Entity* ent);
-	void removeChild(Entity* ent);
-
-	//Vector3 getPosition();
-};
-
-
-class EntityMesh : public Entity {
-public:
-	Mesh* mesh;
-	Texture* texture;
-	Shader* shader;
-	Vector4 color;
-
-	void render();
-	void update(float dt);
-};
 
 class World
 {
@@ -55,9 +17,15 @@ public:
 
 	static World* instance;
 
-	World();
 	EntityMesh root;
+
+	Player player;
+	bool freecam;
+	EntityMesh* map[mapSize];
+	EntityMesh* players[mapSize];
 	Camera* camera; //our global camera
+	World();
+	void renderMap();
 	void render();
 	void update(double seconds_elapsed);
 	//void clear();

@@ -2,51 +2,33 @@
 #include "game.h"
 #include "input.h"
 
+
 float mouse_speed = 100.0f;
-
-Entity::Entity() {
-	this->entity_type = NONE;
-}
-
-
-void Entity::addChild(Entity* ent) {
-	this->children.push_back(ent);
-}
-
-void EntityMesh::render() {
-	Camera* camera = Camera::current;
-	Matrix44 model = this->model;
-
-	//enable shader and pass uniforms
-	shader->enable();
-	shader->setUniform("u_model", model);
-	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-	shader->setTexture("u_texture", this->texture, 0);
-	shader->setUniform("u_color", this->color);
-	//render the mesh using the shader
-	mesh->render(GL_TRIANGLES);
-
-	//disable the shader after finishing rendering
-	shader->disable();
-
-	for (int i = 0; i < children.size(); i++)
-		children[i]->render();  //repeat for every child
-}
-
-
-void EntityMesh::update(float dt) {}
 
 World* World::instance = NULL;
 
 World::World() {
 	instance = this;
+	freecam = false;
 
-	root = EntityMesh();
-	root.model = Matrix44();
-	root.texture = Texture::Get("data/texture.tga");
-	root.mesh = Mesh::Get("data/box.ASE");
-	root.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
-	root.color = Vector4(1, 1, 1, 1);
+	Texture* texture = Texture::Get("data/export.png");
+	Mesh* mesh = Mesh::Get("data/export.obj");
+	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+	Vector4 color = Vector4(1, 1, 1, 1);
+	int offset = 40;
+
+	Vector3 padding = mesh->box.halfsize;
+
+	for (int i = 0; i < mapSize; i++)
+	{
+		map[i] = new EntityMesh(mesh, texture, shader, color);
+		map[i]->model.setTranslation(0, 0, i * (-padding.z - offset));
+	}
+
+	player = Player();
+	Vector3 paddingPlayer = player.entity->mesh->box.halfsize;
+	player.entity->model.setTranslation(0, paddingPlayer.y/10, 0);
+
 
 	//create our camera
 	this->camera = new Camera();
@@ -56,7 +38,27 @@ World::World() {
 
 void World::render() {
 	camera->enable();
-	root.render();
+
+	//islas[0]->render();
+	renderMap();
+	player.entity->render();
+
+	Vector3 eye = player.entity->model * Vector3(0.0f, 6.0f, 10.0f);
+	Vector3 center = player.entity->model * Vector3(0.0f, 0.0f, -2.0f);
+	Vector3 up = Vector3(0.0f, 1.0f, 0.0f);
+
+	camera->lookAt(eye, center, up);
+
+	
+}
+
+void World::renderMap() {
+	//Matrix44 model = islas[0]->model;
+
+	for (size_t i = 0; i < mapSize; i++)
+	{
+		map[i]->render();
+	}
 
 }
 
@@ -74,11 +76,26 @@ void World::update(double seconds_elapsed) {
 	}
 
 	//async input to move the camera around
-	if (Input::isKeyPressed(SDL_SCANCODE_LSHIFT)) speed *= 10; //move faster with left shift
-	if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) camera->move(Vector3(0.0f, 0.0f, 1.0f) * speed);
-	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) camera->move(Vector3(0.0f, 0.0f, -1.0f) * speed);
-	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) camera->move(Vector3(1.0f, 0.0f, 0.0f) * speed);
-	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
+	if (Input::isKeyPressed(SDL_SCANCODE_1)) freecam = !freecam; //move faster with left shift
+
+
+	if (freecam)
+	{
+		if (Input::isKeyPressed(SDL_SCANCODE_LSHIFT)) speed *= 10; //move faster with left shift
+		if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) camera->move(Vector3(0.0f, 0.0f, 1.0f) * speed);
+		if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) camera->move(Vector3(0.0f, 0.0f, -1.0f) * speed);
+		if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) camera->move(Vector3(1.0f, 0.0f, 0.0f) * speed);
+		if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
+	}
+	else
+	{
+		if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) player.move(Vector3(0.0f, 0.0f, 1.0f) * speed);
+		if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) player.move(Vector3(0.0f, 0.0f, -1.0f) * speed);
+		if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) player.move(Vector3(1.0f, 0.0f, 0.0f) * speed);
+		if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) player.move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
+	}
+
+	std::cout << mouse_speed << "\n";
 
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)
