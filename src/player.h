@@ -9,12 +9,13 @@ class Player
 public:
 	Vector3 pos;
 	EntityMesh* entity;
-	Vector3 playerVel;
+	Vector3 speed;
+	
 
 	Player();
 
-	void move(Vector3 delta);
-
+	void turn(float delta);
+	void accelerate(float delta);
 };
 
 #endif

@@ -8,7 +8,7 @@
 #include "shader.h"
 #include "camera.h"
 
-constexpr auto mapSize = 10;
+
 
 enum eEntityType {
 	NONE = 0,
@@ -50,6 +50,7 @@ public:
 	EntityMesh();
 	EntityMesh(Mesh* mesh, Texture* texture, Shader* shader, Vector4 color);
 	void render();
+	void render(Matrix44 model);
 	void update(float dt);
 };
 

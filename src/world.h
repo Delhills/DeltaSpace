@@ -10,6 +10,7 @@
 #include "player.h"
 
 extern float mouse_speed;
+constexpr auto mapSize = 20;
 
 class World
 {
@@ -22,12 +23,17 @@ public:
 	Player player;
 	bool freecam;
 	EntityMesh* map[mapSize];
-	EntityMesh* players[mapSize];
+	std::vector<EntityMesh*> Obstacles;
+	EntityMesh* bars[2 * mapSize];
+	EntityMesh* sky;
+
 	Camera* camera; //our global camera
 	World();
 	void renderMap();
 	void render();
 	void update(double seconds_elapsed);
+	void addObstacle();
+	void renderObstacles();
 	//void clear();
 	//void addEntity(Entity* entity);
 

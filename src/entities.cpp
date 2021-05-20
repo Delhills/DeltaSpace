@@ -45,5 +45,26 @@ void EntityMesh::render() {
 		children[i]->render();  //repeat for every child
 }
 
+void EntityMesh::render(Matrix44 model)
+{
+	Camera* camera = Camera::current;
+	
+	//enable shader and pass uniforms
+	shader->enable();
+	shader->setUniform("u_model", model);
+	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+	shader->setTexture("u_texture", this->texture, 0);
+	shader->setUniform("u_color", this->color);
+	//render the mesh using the shader
+	mesh->render(GL_TRIANGLES);
+
+	//disable the shader after finishing rendering
+	shader->disable();
+
+	for (int i = 0; i < children.size(); i++)
+		children[i]->render();  //repeat for every child
+	
+}
+
 
 void EntityMesh::update(float dt) {}

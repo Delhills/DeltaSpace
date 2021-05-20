@@ -10,12 +10,16 @@ Player::Player()
 
 	entity = new EntityMesh(mesh, texture, shader, color);
 	pos = entity->model.getTranslation();
-
+	this->speed = Vector3(0, 0, 0);
 }
 
 
-void Player::move(Vector3 delta)
+
+void Player::accelerate(float delta)
 {
-	this->pos = this->pos - delta;
-	this->entity->model.translate(-delta.x, -delta.y, -delta.z);
+	this->speed.z = clamp(this->speed.z + delta, 0.2, 1);
+}
+void Player::turn(float delta)
+{
+	this->speed.x = clamp(this->speed.x + delta, -this->speed.z*0.5, this->speed.z*0.5);
 }
