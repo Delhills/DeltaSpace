@@ -11,6 +11,7 @@ Player::Player()
 	entity = new EntityMesh(mesh, texture, shader, color);
 	pos = entity->model.getTranslation();
 	this->speed = Vector3(0, 0, 0);
+	this->targetPos = Vector3();
 }
 
 
@@ -20,9 +21,13 @@ float turn_speed = 0.5;
 
 void Player::accelerate(float delta)
 {
-	this->speed.z = clamp(this->speed.z + delta, min_speed, max_speed);
+
+	float finalspeed = lerp(this->speed.z, this->speed.z + delta, 0.08);
+	this->speed.z = clamp(finalspeed, min_speed, max_speed);
 }
 void Player::turn(float delta)
-{
-	this->speed.x = clamp(this->speed.x + delta, -this->speed.z* turn_speed, this->speed.z* turn_speed);
+{	
+	float finalspeed = lerp(this->speed.x, this->speed.x + delta, 0.5);
+	this->speed.x = clamp(finalspeed, -this->speed.z* turn_speed, this->speed.z* turn_speed);
+	this->pos.x = clamp(this->pos.x, -9.2, 9.85);
 }

@@ -10,6 +10,7 @@ public:
 	Vector3 pos;
 	EntityMesh* entity;
 	Vector3 speed;
+	Vector3 targetPos;
 	
 
 	Player();

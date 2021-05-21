@@ -4,7 +4,7 @@
 #include "fbo.h"
 
 
-float mouse_speed = 20.0f;
+float mouse_speed = 10.0f;
 
 World* World::instance = NULL;
 
@@ -23,7 +23,7 @@ World::World() {
 	for (int i = 0; i < mapSize; i++)
 	{
 		map[i] = new EntityMesh(mesh, texture, shader, color);
-		map[i]->model.setTranslation(0, 0, i * (-padding.z - offset));
+		map[i]->model.setTranslation(0, 0, i * (-padding.z - offset)-10);
 	}
 
 	texture = Texture::Get("data/barra2.png");
@@ -40,19 +40,21 @@ World::World() {
 		bars[i]->model.setTranslation(pos.x, pos.y, pos.z);
 		bars[i]->model.setTranslation(-padding.x / 2 + 10, 0, i * (-padding.z) + 5);
 		bars[i + 1]->model.setTranslation(padding.x / 2 - 10, 0, i * (-padding.z) + 5);
-		map[i / 2]->addChild(bars[i]);
-		map[i / 2]->addChild(bars[i + 1]);
+		//map[i / 2]->addChild(bars[i]);
+		//map[i / 2]->addChild(bars[i + 1]);
+		obstacles.push_back(bars[i]);
+		obstacles.push_back(bars[i+1]);
 	}
 
 	player = Player();
 	Vector3 paddingPlayer = player.entity->mesh->box.halfsize;
 	player.entity->model.setTranslation(0, paddingPlayer.y/10, 0);
 
-	texture = Texture::Get("data/SunsetSky.png");
-	mesh = Mesh::Get("data/sphere.obj");
+	texture = Texture::Get("data/SkySkybox.png");
+	mesh = Mesh::Get("data/prueba.obj");
 	sky = new EntityMesh(mesh, texture, shader, color);
 
-
+	
 	//create our camera
 	this->camera = new Camera();
 	camera->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
@@ -74,15 +76,15 @@ void World::render() {
 
 	if (!freecam) {
 
-		Vector3 eye = playerModel * Vector3(0.0f, 6.0f, 10.0f);
-		Vector3 center = playerModel * Vector3(0.0f, 0.0f, -2.0f);
+		Vector3 eye = playerModel * Vector3(0.0f, 7.0f, 10.0f);
+		Vector3 center = playerModel * Vector3(0.0f, 0.0f, -5.0f);
 		Vector3 up = Vector3(0.0f, 1.0f, 0.0f);
 
 		camera->lookAt(eye, center, up);
 	}
 
 	Matrix44 skyModel;
-	//skyModel.translate(camera->eye.x,camera->eye.y,camera->eye.z);
+	skyModel.translate(camera->eye.x,camera->eye.y,camera->eye.z);
 	sky->render(skyModel);
 }
 
@@ -99,11 +101,35 @@ void World::renderMap() {
 void World::renderObstacles() {
 	//Matrix44 model = islas[0]->model;
 
-	for (size_t i = 0; i < Obstacles.size(); i++)
+	for (size_t i = 0; i < obstacles.size(); i++)
 	{
-		Obstacles.at(i)->render();
+		obstacles.at(i)->render();
 	}
 
+}
+
+Vector3 World::checkCol(std::vector<EntityMesh*> obstaclelist, Vector3 playerPos, double seconds_elapsed, Vector3 playerSpeed)
+{
+	Vector3 characterCenter = playerPos + Vector3(0, 1, 0);
+	for (size_t i = 0; i < obstaclelist.size(); i++)
+	{
+		EntityMesh* currentEntity = obstaclelist[i];
+
+		Vector3 coll;
+		Vector3 collnorm;
+
+		if (!currentEntity->mesh->testSphereCollision(currentEntity->model, characterCenter, 1, coll, collnorm))
+			continue;
+		std::cout << "collision!" << "\n";
+		if (playerSpeed.z > 0.2) {
+			playerSpeed.z = playerSpeed.z/2;
+		}
+		else {
+			playerSpeed.z = 0.2;
+		}
+	}
+
+	return playerSpeed;
 }
 
 void World::addObstacle() {
@@ -137,7 +163,7 @@ void World::addObstacle() {
 	
 	EntityMesh* obstacle = new EntityMesh(mesh, texture, shader, color);
 	obstacle->model.setTranslation(pos.x, pos.y, pos.z);
-	Obstacles.push_back(obstacle);
+	obstacles.push_back(obstacle);
 
 	
 }
@@ -180,10 +206,11 @@ void World::update(double seconds_elapsed) {
 		player.pos = player.pos - player.speed;
 	}
 
-	
-	
+	player.speed = checkCol(obstacles, player.pos, seconds_elapsed, player.speed);
 
-	std::cout << mouse_speed << "\n";
+
+
+	std::cout << player.pos.x << "\n";
 
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)
