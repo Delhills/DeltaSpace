@@ -14,12 +14,15 @@ Player::Player()
 }
 
 
+float max_speed = 1;
+float min_speed = 0.2;
+float turn_speed = 0.5;
 
 void Player::accelerate(float delta)
 {
-	this->speed.z = clamp(this->speed.z + delta, 0.2, 1);
+	this->speed.z = clamp(this->speed.z + delta, min_speed, max_speed);
 }
 void Player::turn(float delta)
 {
-	this->speed.x = clamp(this->speed.x + delta, -this->speed.z*0.5, this->speed.z*0.5);
+	this->speed.x = clamp(this->speed.x + delta, -this->speed.z* turn_speed, this->speed.z* turn_speed);
 }
