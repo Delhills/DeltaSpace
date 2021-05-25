@@ -22,6 +22,7 @@ public:
 
 	Player player;
 	bool freecam;
+	EntityMesh* goal;
 	EntityMesh* map[mapSize];
 	std::vector<EntityMesh*> obstacles;
 	EntityMesh* bars[2 * mapSize];
@@ -29,12 +30,14 @@ public:
 
 	Camera* camera; //our global camera
 	World();
+	void loadWord();
 	void renderMap();
 	void render();
 	void update(double seconds_elapsed);
 	void addObstacle();
 	void renderObstacles();
-	Vector3 checkCol(std::vector<EntityMesh*> obstaclelist, Vector3 playerPos, double seconds_elapsed, Vector3 playerSpeed);
+	bool checkCol(EntityMesh* obstacle, Vector3 playerPos);
+	bool done;
 	//void clear();
 	//void addEntity(Entity* entity);
 

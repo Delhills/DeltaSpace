@@ -11,7 +11,7 @@ World* World::instance = NULL;
 World::World() {
 	instance = this;
 	freecam = false;
-
+	done = false;
 	Texture* texture = Texture::Get("data/export.png");
 	Mesh* mesh = Mesh::Get("data/export.obj");
 	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
@@ -19,12 +19,18 @@ World::World() {
 	int offset = 40;
 
 	Vector3 padding = mesh->box.halfsize;
-
+	loadWord();
 	for (int i = 0; i < mapSize; i++)
 	{
 		map[i] = new EntityMesh(mesh, texture, shader, color);
 		map[i]->model.setTranslation(0, 0, i * (-padding.z - offset)-10);
 	}
+
+	texture = Texture::Get("data/meta.png");
+	mesh = Mesh::Get("data/meta.obj");
+	EntityMesh* goal=new EntityMesh(mesh, texture, shader, color);
+	goal->model.setTranslation(0, 0, mapSize * (-padding.z - offset)+35);
+	this->goal = goal;
 
 	texture = Texture::Get("data/barra2.png");
 	mesh = Mesh::Get("data/barra2.obj");
@@ -61,7 +67,12 @@ World::World() {
 	camera->setPerspective(70.f, Game::instance->window_width / (float)Game::instance->window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 }
 
+void World::loadWord()
+{
+}
+
 void World::render() {
+
 	camera->enable();
 
 	Matrix44 playerModel;
@@ -72,7 +83,7 @@ void World::render() {
 	renderMap();
 	renderObstacles();
 	player.entity->render(playerModel);
-
+	goal->render();
 
 	if (!freecam) {
 
@@ -86,6 +97,9 @@ void World::render() {
 	Matrix44 skyModel;
 	skyModel.translate(camera->eye.x,camera->eye.y,camera->eye.z);
 	sky->render(skyModel);
+
+	drawText(5, Game::instance->window_height-25, std::to_string( player.speed.z * 1000)+" Km/h", Vector3(1, 1, 1), 3);
+	if(done) drawText(Game::instance->window_width/2 - 300, Game::instance->window_height/2 -20, "Has ganado ", Vector3(1, 1, 0), 10);
 }
 
 void World::renderMap() {
@@ -108,28 +122,15 @@ void World::renderObstacles() {
 
 }
 
-Vector3 World::checkCol(std::vector<EntityMesh*> obstaclelist, Vector3 playerPos, double seconds_elapsed, Vector3 playerSpeed)
+bool World::checkCol(EntityMesh* obstacle, Vector3 playerPos)
 {
 	Vector3 characterCenter = playerPos + Vector3(0, 1, 0);
-	for (size_t i = 0; i < obstaclelist.size(); i++)
-	{
-		EntityMesh* currentEntity = obstaclelist[i];
+	
+	Vector3 coll;
+	Vector3 collnorm;
 
-		Vector3 coll;
-		Vector3 collnorm;
-
-		if (!currentEntity->mesh->testSphereCollision(currentEntity->model, characterCenter, 1, coll, collnorm))
-			continue;
-		std::cout << "collision!" << "\n";
-		if (playerSpeed.z > 0.2) {
-			playerSpeed.z = playerSpeed.z/2;
-		}
-		else {
-			playerSpeed.z = 0.2;
-		}
-	}
-
-	return playerSpeed;
+	return (obstacle->mesh->testSphereCollision(obstacle->model, characterCenter, 1, coll, collnorm));
+		
 }
 
 void World::addObstacle() {
@@ -171,8 +172,8 @@ void World::addObstacle() {
 void World::update(double seconds_elapsed) {
 
 	bool mouse_locked = Game::instance->mouse_locked;
-	float speed = seconds_elapsed * mouse_speed; //the speed is defined by the seconds_elapsed so it goes constant
-	
+	float camSpeed = seconds_elapsed * mouse_speed; //the speed is defined by the seconds_elapsed so it goes constant
+	float speed = seconds_elapsed * 10.0f;
 
 		//mouse input to rotate the cam
 	if ((Input::mouse_state & SDL_BUTTON_LEFT) || mouse_locked) //is left button pressed?
@@ -183,15 +184,15 @@ void World::update(double seconds_elapsed) {
 
 	//async input to move the camera around
 	if (Input::wasKeyPressed(SDL_SCANCODE_1)) freecam = !freecam; //move faster with left shift
-
+	if (Input::wasKeyPressed(SDL_SCANCODE_0)) { player.pos = Vector3(0, 0, 0); done = false; }//move faster with left shift
 
 	if (freecam)
 	{
-		if (Input::isKeyPressed(SDL_SCANCODE_LSHIFT)) speed *= 10; //move faster with left shift
-		if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) camera->move(Vector3(0.0f, 0.0f, 1.0f) * speed);
-		if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) camera->move(Vector3(0.0f, 0.0f, -1.0f) * speed);
-		if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) camera->move(Vector3(1.0f, 0.0f, 0.0f) * speed);
-		if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
+		if (Input::isKeyPressed(SDL_SCANCODE_LSHIFT)) camSpeed *= 10; //move faster with left shift
+		if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) camera->move(Vector3(0.0f, 0.0f, 1.0f) * camSpeed);
+		if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) camera->move(Vector3(0.0f, 0.0f, -1.0f) * camSpeed);
+		if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) camera->move(Vector3(1.0f, 0.0f, 0.0f) * camSpeed);
+		if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) camera->move(Vector3(-1.0f, 0.0f, 0.0f) * camSpeed);
 		if (Input::wasKeyPressed(SDL_SCANCODE_C)) addObstacle();
 	}
 	else
@@ -206,11 +207,25 @@ void World::update(double seconds_elapsed) {
 		player.pos = player.pos - player.speed;
 	}
 
-	player.speed = checkCol(obstacles, player.pos, seconds_elapsed, player.speed);
+	for (size_t i = 0; i < obstacles.size(); i++)
+	{
+		if (checkCol(obstacles[i], player.pos)){
 
+			std::cout << "collision!" << "\n";
+			if (player.speed.z > 0.2) {
+				player.speed.z = player.speed.z / 2;
+			}
+			else {
+				player.speed.z = 0.2;
+			}
+		}
+	}
 
+	if (checkCol(goal, player.pos)) {
+		std::cout << "ole muy bien!" << "\n";
+		done = true;
+	}
 
-	std::cout << player.pos.x << "\n";
 
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)

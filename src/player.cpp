@@ -2,7 +2,6 @@
 
 Player::Player()
 {
-
 	Texture* texture = Texture::Get("data/player.png");
 	Mesh* mesh = Mesh::Get("data/player.obj");
 	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
@@ -21,7 +20,6 @@ float turn_speed = 0.5;
 
 void Player::accelerate(float delta)
 {
-
 	float finalspeed = lerp(this->speed.z, this->speed.z + delta, 0.08);
 	this->speed.z = clamp(finalspeed, min_speed, max_speed);
 }
