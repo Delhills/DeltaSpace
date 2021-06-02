@@ -35,22 +35,22 @@ World::World() {
 	texture = Texture::Get("data/barra2.png");
 	mesh = Mesh::Get("data/barra2.obj");
 
-	for (int i = 0; i < mapSize * 2; i = i + 2)
-	{
-		bars[i] = new EntityMesh(mesh, texture, shader, color);
-		bars[i + 1] = new EntityMesh(mesh, texture, shader, color);
+	//for (int i = 0; i < mapSize * 2; i = i + 2)
+	//{
+	//	bars[i] = new EntityMesh(mesh, texture, shader, color);
+	//	bars[i + 1] = new EntityMesh(mesh, texture, shader, color);
 
-		Vector3 pos = map[i / 2]->model.getTranslation();
+	//	Vector3 pos = map[i / 2]->model.getTranslation();
 
 
-		bars[i]->model.setTranslation(pos.x, pos.y, pos.z);
-		bars[i]->model.setTranslation(-padding.x / 2 + 10, 0, i * (-padding.z) + 5);
-		bars[i + 1]->model.setTranslation(padding.x / 2 - 10, 0, i * (-padding.z) + 5);
-		//map[i / 2]->addChild(bars[i]);
-		//map[i / 2]->addChild(bars[i + 1]);
-		obstacles.push_back(bars[i]);
-		obstacles.push_back(bars[i+1]);
-	}
+	//	bars[i]->model.setTranslation(pos.x, pos.y, pos.z);
+	//	bars[i]->model.setTranslation(-padding.x / 2 + 10, 0, i * (-padding.z) + 5);
+	//	bars[i + 1]->model.setTranslation(padding.x / 2 - 10, 0, i * (-padding.z) + 5);
+	//	//map[i / 2]->addChild(bars[i]);
+	//	//map[i / 2]->addChild(bars[i + 1]);
+	//	obstacles.push_back(bars[i]);
+	//	obstacles.push_back(bars[i+1]);
+	//}
 
 	player = Player();
 	Vector3 paddingPlayer = player.entity->mesh->box.halfsize;
@@ -75,8 +75,21 @@ void World::render() {
 
 	camera->enable();
 
-	Matrix44 playerModel;
+	Matrix44 playerModel;// = player.entity->model;
 	playerModel.translate(player.pos.x, player.pos.y, player.pos.z);
+	playerModel.rotate(player.rot, Vector3(0.0, 0.0, 1.0));
+	Vector3 coll, normal;
+	for (size_t i = 0; i < mapSize; i++)
+	{
+		if (map[i]->mesh->testRayCollision(map[i]->model, Vector3(0.0, 0.0, player.pos.z), player.entity->model.topVector(),
+			coll, normal)) {
+			player.pos = coll;
+		}
+		
+	}
+
+	//player.entity->model.translate(player.pos.x, player.pos.y, player.pos.z);
+	player.entity->model.rotate(player.rot, Vector3(0.0, 0.0, 1.0));
 
 	
 	//islas[0]->render();
@@ -89,7 +102,7 @@ void World::render() {
 
 		Vector3 eye = playerModel * Vector3(0.0f, 7.0f, 10.0f);
 		Vector3 center = playerModel * Vector3(0.0f, 0.0f, -5.0f);
-		Vector3 up = Vector3(0.0f, 1.0f, 0.0f);
+		Vector3 up = playerModel.topVector();
 
 		camera->lookAt(eye, center, up);
 	}
@@ -140,11 +153,10 @@ void World::addObstacle() {
 	int height = Game::instance->window_height;
 
 	Vector3 dir = camera->getRayDirection(Input::mouse_position.x, Input::mouse_position.y, width, height);
-
+	
 
 	Vector3 up = Vector3(0, 1, 0);
 	Vector3 pos = RayPlaneCollision(Vector3(),up,orgin,dir);
-
 
 	Mesh* mesh = Mesh::Get("data/obstacle.obj");
 
@@ -202,9 +214,9 @@ void World::update(double seconds_elapsed) {
 
 		if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) player.turn(speed);
 		else if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) player.turn(-speed);
-		else player.turn(-player.speed.x);
+		//else player.turn(-player.speed.x);
 
-		player.pos = player.pos - player.speed;
+		player.pos.z = player.pos.z - player.speed.z;
 	}
 
 	for (size_t i = 0; i < obstacles.size(); i++)

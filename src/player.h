@@ -8,6 +8,8 @@ class Player
 {
 public:
 	Vector3 pos;
+	//Matrix44 rotation;
+	float rot;
 	EntityMesh* entity;
 	Vector3 speed;
 	Vector3 targetPos;	

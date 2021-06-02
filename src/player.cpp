@@ -8,7 +8,9 @@ Player::Player()
 	Vector4 color = Vector4(1, 1, 1, 1);
 
 	entity = new EntityMesh(mesh, texture, shader, color);
-	pos = entity->model.getTranslation();
+	pos = Vector3(0, 0, 0);
+	//rotation = entity->model.getRotationOnly();
+	rot = 0.0f;
 	this->speed = Vector3(0, 0, 0);
 	this->targetPos = Vector3();
 }
@@ -25,7 +27,15 @@ void Player::accelerate(float delta)
 }
 void Player::turn(float delta)
 {	
-	float finalspeed = lerp(this->speed.x, this->speed.x + delta, 0.5);
-	this->speed.x = clamp(finalspeed, -this->speed.z* turn_speed, this->speed.z* turn_speed);
-	this->pos.x = clamp(this->pos.x, -9.2, 9.85);
+	//float finalspeed = lerp(this->speed.x, this->speed.x + delta, 0.5);
+	//this->speed.x = clamp(finalspeed, -this->speed.z* turn_speed, this->speed.z* turn_speed);
+	this->rot = delta;
+	//Vector3 coll;
+
+
+
+	//RaySphereCollision(Vector3(0.0, 0.0, this->pos.z), 14, this->pos, (this->entity->model.topVector() * -1), coll);
+	//std::cout << coll.x << ", " << coll.y << ", " << coll.z << ", " << "\n";
+	//this->pos = coll;
+	//this->pos.x = clamp(this->pos.x, -9.2, 9.85);
 }
