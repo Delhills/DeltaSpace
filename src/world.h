@@ -37,6 +37,7 @@ public:
 	void addObstacle();
 	void renderObstacles();
 	bool checkCol(EntityMesh* obstacle, Vector3 playerPos);
+	void ComputePos();
 	bool done;
 	//void clear();
 	//void addEntity(Entity* entity);

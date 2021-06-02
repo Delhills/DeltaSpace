@@ -12,12 +12,12 @@ public:
 	float rot;
 	EntityMesh* entity;
 	Vector3 speed;
-	Vector3 targetPos;	
-
+	Vector3 normal;
 	Player();
 
 	void turn(float delta);
 	void accelerate(float delta);
+	void Render();
 };
 
 #endif

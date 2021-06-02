@@ -12,9 +12,13 @@ Player::Player()
 	//rotation = entity->model.getRotationOnly();
 	rot = 0.0f;
 	this->speed = Vector3(0, 0, 0);
-	this->targetPos = Vector3();
+	this->normal = Vector3(0,1,0);
 }
 
+void Player::Render() {
+	this->entity->render(this->entity->model);
+
+}
 
 float max_speed = 1;
 float min_speed = 0.2;
@@ -29,10 +33,9 @@ void Player::turn(float delta)
 {	
 	//float finalspeed = lerp(this->speed.x, this->speed.x + delta, 0.5);
 	//this->speed.x = clamp(finalspeed, -this->speed.z* turn_speed, this->speed.z* turn_speed);
-	this->rot = delta;
+	
+	this->rot += delta;
 	//Vector3 coll;
-
-
 
 	//RaySphereCollision(Vector3(0.0, 0.0, this->pos.z), 14, this->pos, (this->entity->model.topVector() * -1), coll);
 	//std::cout << coll.x << ", " << coll.y << ", " << coll.z << ", " << "\n";
