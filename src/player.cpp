@@ -17,7 +17,6 @@ Player::Player()
 
 void Player::Render() {
 	this->entity->render(this->entity->model);
-
 }
 
 float max_speed = 1;
@@ -35,8 +34,16 @@ void Player::turn(float delta)
 	//this->speed.x = clamp(finalspeed, -this->speed.z* turn_speed, this->speed.z* turn_speed);
 	
 	this->rot += delta;
-	//Vector3 coll;
 
+	if (this->rot > 360) {
+		this->rot -= 360;
+	}
+
+	if (this->rot < -360) {
+		this->rot += 360;
+	}
+	//Vector3 coll;
+	
 	//RaySphereCollision(Vector3(0.0, 0.0, this->pos.z), 14, this->pos, (this->entity->model.topVector() * -1), coll);
 	//std::cout << coll.x << ", " << coll.y << ", " << coll.z << ", " << "\n";
 	//this->pos = coll;

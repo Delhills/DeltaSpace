@@ -4,7 +4,6 @@
 
 Stage::Stage() {}
 
-
 void Stage::NextStage() {
 
 	int stage = Game::instance->currentStage;

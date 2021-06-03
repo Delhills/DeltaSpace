@@ -14,17 +14,20 @@ World::World() {
 	done = false;
 	Texture* texture = Texture::Get("data/export.png");
 	Mesh* mesh = Mesh::Get("data/export.obj");
+	//Mesh* mesh = Mesh::Get("data/prueva.obj");
 	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 	Vector4 color = Vector4(1, 1, 1, 1);
 	int offset = 40;
 
 	Vector3 padding = mesh->box.halfsize;
 	
+
 	for (int i = 0; i < mapSize; i++)
 	{
 		map[i] = new EntityMesh(mesh, texture, shader, color);
 		map[i]->model.setTranslation(0, 0, i * (-padding.z - offset)-10);
 	}
+
 
 	texture = Texture::Get("data/meta.png");
 	mesh = Mesh::Get("data/meta.obj");
@@ -60,6 +63,10 @@ World::World() {
 	mesh = Mesh::Get("data/prueba.obj");
 	sky = new EntityMesh(mesh, texture, shader, color);
 
+	mesh = Mesh::Get("data/obstacle.obj");
+	texture = Texture::Get("data/obstacle.png");
+
+	puntito = new EntityMesh(mesh, texture, shader, color);
 	
 	//create our camera
 	this->camera = new Camera();
@@ -81,7 +88,6 @@ void World::render() {
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
-
 	//create model matrix for cube
 	//Matrix44 m;
 	//m.rotate(angle*DEG2RAD, Vector3(0, 1, 0));
@@ -109,33 +115,22 @@ void World::render() {
 
 	Matrix44 playerModel;// = player.entity->model;
 	playerModel.rotate(player.rot * DEG2RAD, Vector3(0.0, 0.0, 1.0));
+	std::cout << player.rot << "\n";
 	playerModel.translate(player.pos.x, player.pos.y, player.pos.z);
-
-	//playerModel.setUpAndOrthonormalize(player.normal);
-	//Vector3 up = playerModel.rotateVector(Vector3(0,1,0));
-
-	//playerModel.setUpAndOrthonormalize();
-
-	//std::cout << up.x << ", " << up.y << ", " << up.z << ", " << "\n";
-
-	//player.entity->model.rotate(player.rot, Vector3(0.0, 0.0, 1.0));
-
-	//std::cout << player.rot  << "\n";
-
-	//islas[0]->render();
+	
+	
 	renderMap();
 	renderObstacles();
 	player.entity->model = playerModel;
 	player.Render();
 	goal->render();
 
-	//std::cout << coll.x << ", " << coll.y << ", " << coll.z << ", " << "\n";
+	
 	if (!freecam) {
 
 		Vector3 eye = playerModel * Vector3(0.0f, 7.0f, 10.0f);
 		Vector3 center = playerModel * Vector3(0.0f, 0.0f, -5.0f);
 		Vector3 up = playerModel.topVector();
-		//std::cout << up.x << ", " << up.y << ", " << up.z << ", " << "\n";
 		camera->lookAt(eye, center, up);
 	}
 
@@ -146,13 +141,15 @@ void World::render() {
 	drawText(5, Game::instance->window_height - 25, std::to_string(player.speed.z * 1000) + " Km/h", Vector3(1, 1, 1), 3);
 	if (done) drawText(Game::instance->window_width / 2 - 300, Game::instance->window_height / 2 - 20, "Has ganado ", Vector3(1, 1, 0), 10);
 
-
+	
 	//Draw the floor grid
 	drawGrid();
 
+	RenderMinimap();
 	//render the FPS, Draw Calls, etc
 	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
 
+	
 	//swap between front buffer and back buffer
 	SDL_GL_SwapWindow(Game::instance->window);
 }
@@ -297,10 +294,40 @@ void World::ComputePos() {
 	Vector3 coll, normal;
 	for (size_t i = 0; i < mapSize; i++)
 	{
-		if (map[i]->mesh->testRayCollision(map[i]->model, Vector3(0.0, 0.0, player.pos.z), -1 * player.entity->model.topVector(),
+		if (map[i]->mesh->testRayCollision(map[i]->model, player.pos, -1 * player.entity->model.topVector(),
 			coll, normal)) {
 			player.pos = coll;
 			player.normal = normal;
 		}
 	}
+}
+
+void World::RenderMinimap() {
+
+	glViewport(Game::instance->window_width - 200, Game::instance->window_height - 200, 200, 200);
+	Camera mapCam;
+	mapCam.setPerspective(60,1,0,1000);
+
+
+	Vector3 eye = Vector3(player.pos.x,player.pos.y+100,player.pos.z);
+	Vector3 center = player.pos;
+	Vector3 up = -1*player.entity->model.frontVector();
+
+	mapCam.lookAt(eye,center,up);
+
+	mapCam.enable();
+	glDisable(GL_BLEND);
+	glDisable(GL_DEPTH_TEST);
+
+	renderMap();
+
+
+	Matrix44 puntitoModel;
+	puntitoModel.setTranslation(player.pos.x, player.pos.y, player.pos.z);
+	puntitoModel.rotate(90*DEG2RAD,Vector3(1,0,0));
+	this->puntito->render(puntitoModel);
+
+	
+
+	glViewport( 0, 0, Game::instance->window_width, Game::instance->window_height);
 }
