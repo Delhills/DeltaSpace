@@ -1,10 +1,29 @@
-clase entity
+Arreglar sky box
 
-jerarquias de entidades
+Niveles y tal
 
-calse world
+Modelo de nave
 
-poner unas cuantas cosas para probar, algunas se renderizan y otras no
+textura tubo
 
-provar cosas nuevas
+Diferentes Obstaculos 
 
+rivales (IA?)
+
+multijugador
+
+Meta
+
+mas de un vuelta
+
+turbo
+
+gamefeel (camara, nave)
+
+Musica/sfx
+
+GUI
+
+Animaciones?
+
+Cinematicas?
