@@ -54,4 +54,17 @@ public:
 	void update(float dt);
 };
 
+enum eObstacleType {
+	BAD,
+	GOOD,
+	GOAL
+};
+
+class Obstacle : public EntityMesh {
+public:
+	Obstacle(Mesh* mesh, Texture* texture, Shader* shader, Vector4 color, eObstacleType type);
+	eObstacleType type;
+	
+};
+
 #endif

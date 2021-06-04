@@ -65,6 +65,14 @@ void EntityMesh::render(Matrix44 model)
 		children[i]->render();  //repeat for every child
 	
 }
-
+Obstacle::Obstacle(Mesh* mesh, Texture* texture, Shader* shader, Vector4 color,eObstacleType type)
+{
+	this->model = Matrix44();
+	this->mesh = mesh;
+	this->texture = texture;
+	this->shader = shader;
+	this->color = color;
+	this->type = type;
+}
 
 void EntityMesh::update(float dt) {}

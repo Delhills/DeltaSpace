@@ -25,7 +25,7 @@ public:
 	bool freecam;
 	EntityMesh* goal;
 	EntityMesh* map[mapSize];
-	std::vector<EntityMesh*> obstacles;
+	std::vector<Obstacle*> obstacles;
 	EntityMesh* bars[2 * mapSize];
 	EntityMesh* sky;
 	EntityMesh* puntito;
@@ -35,7 +35,7 @@ public:
 	void renderMap();
 	void render();
 	void update(double seconds_elapsed);
-	void addObstacle();
+	void addObstacle(eObstacleType type);
 	void renderObstacles();
 	bool checkCol(EntityMesh* obstacle, Vector3 playerPos);
 	void ComputePos();

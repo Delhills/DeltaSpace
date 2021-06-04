@@ -1,7 +1,7 @@
 #pragma once
 #include "world.h"
 
-enum StageID {
+enum eStageID {
 	INTRO,
 	LEVEL1,
 	END 

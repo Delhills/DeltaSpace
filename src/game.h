@@ -27,7 +27,7 @@ public:
 	int fps;
 	bool must_exit;
 	std::vector<Stage*> stages;
-	StageID currentStage;
+	eStageID currentStage;
 	//some vars
 	
 	bool mouse_locked; //tells if the mouse is locked (not seen)

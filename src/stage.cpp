@@ -11,7 +11,7 @@ void Stage::NextStage() {
 
 	if (stage > END) Game::instance->must_exit = true;
 	
-	Game::instance->currentStage = static_cast<StageID>(stage);
+	Game::instance->currentStage = static_cast<eStageID>(stage);
 }
 
 MenuStage::MenuStage() {}

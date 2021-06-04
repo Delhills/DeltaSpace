@@ -12,9 +12,9 @@ World::World() {
 	instance = this;
 	freecam = false;
 	done = false;
-	Texture* texture = Texture::Get("data/export.png");
-	Mesh* mesh = Mesh::Get("data/export.obj");
-	//Mesh* mesh = Mesh::Get("data/prueva.obj");
+	Texture* texture = Texture::Get("data/textures/export.png");
+	Mesh* mesh = Mesh::Get("data/meshes/tubo.obj");
+	//Mesh* mesh = Mesh::Get("data/meshes/tubo_feo.obj");
 	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 	Vector4 color = Vector4(1, 1, 1, 1);
 	int offset = 40;
@@ -29,14 +29,14 @@ World::World() {
 	}
 
 
-	texture = Texture::Get("data/meta.png");
-	mesh = Mesh::Get("data/meta.obj");
+	texture = Texture::Get("data/textures/meta.png");
+	mesh = Mesh::Get("data/meshes/meta.obj");
 	EntityMesh* goal=new EntityMesh(mesh, texture, shader, color);
 	goal->model.setTranslation(0, 0, mapSize * (-padding.z - offset)+35);
 	this->goal = goal;
 
-	texture = Texture::Get("data/barra2.png");
-	mesh = Mesh::Get("data/barra2.obj");
+	texture = Texture::Get("data/textures/barra2.png");
+	mesh = Mesh::Get("data/meshes/barra2.obj");
 
 	//for (int i = 0; i < mapSize * 2; i = i + 2)
 	//{
@@ -59,12 +59,12 @@ World::World() {
 	Vector3 paddingPlayer = player.entity->mesh->box.halfsize;
 	player.entity->model.setTranslation(0, paddingPlayer.y/10, 0);
 
-	texture = Texture::Get("data/SkySkybox.png");
-	mesh = Mesh::Get("data/prueba.obj");
+	texture = Texture::Get("data/textures/SkySkybox.png");
+	mesh = Mesh::Get("data/meshes/esfera.obj");
 	sky = new EntityMesh(mesh, texture, shader, color);
 
-	mesh = Mesh::Get("data/obstacle.obj");
-	texture = Texture::Get("data/obstacle.png");
+	mesh = Mesh::Get("data/meshes/obstacle.obj");
+	texture = Texture::Get("data/textures/obstacle.png");
 
 	puntito = new EntityMesh(mesh, texture, shader, color);
 	
@@ -86,7 +86,7 @@ void World::render() {
 
 	//set flags
 	glDisable(GL_BLEND);
-	glEnable(GL_DEPTH_TEST);
+	
 	glDisable(GL_CULL_FACE);
 	//create model matrix for cube
 	//Matrix44 m;
@@ -115,10 +115,17 @@ void World::render() {
 
 	Matrix44 playerModel;// = player.entity->model;
 	playerModel.rotate(player.rot * DEG2RAD, Vector3(0.0, 0.0, 1.0));
+	playerModel.setUpAndOrthonormalize(-1 * player.normal);
 	std::cout << player.rot << "\n";
+
 	playerModel.translate(player.pos.x, player.pos.y, player.pos.z);
-	
-	
+
+	glDisable(GL_DEPTH_TEST);
+	Matrix44 skyModel;
+	skyModel.translate(camera->eye.x, camera->eye.y, camera->eye.z);
+	sky->render(skyModel);
+	glEnable(GL_DEPTH_TEST);
+
 	renderMap();
 	renderObstacles();
 	player.entity->model = playerModel;
@@ -134,9 +141,7 @@ void World::render() {
 		camera->lookAt(eye, center, up);
 	}
 
-	Matrix44 skyModel;
-	skyModel.translate(camera->eye.x, camera->eye.y, camera->eye.z);
-	sky->render(skyModel);
+	
 
 	drawText(5, Game::instance->window_height - 25, std::to_string(player.speed.z * 1000) + " Km/h", Vector3(1, 1, 1), 3);
 	if (done) drawText(Game::instance->window_width / 2 - 300, Game::instance->window_height / 2 - 20, "Has ganado ", Vector3(1, 1, 0), 10);
@@ -185,39 +190,52 @@ bool World::checkCol(EntityMesh* obstacle, Vector3 playerPos)
 		
 }
 
-void World::addObstacle() {
+void World::addObstacle(eObstacleType type) {
 
-	Vector3 orgin = camera->eye;
+	Vector3 origin = camera->eye;
 	int width = Game::instance->window_width;
 	int height = Game::instance->window_height;
 
 	Vector3 dir = camera->getRayDirection(Input::mouse_position.x, Input::mouse_position.y, width, height);
 	
+	
+	Vector3 coll, normal,pos;
+	for (size_t i = 0; i < mapSize; i++)
+	{
+		if (map[i]->mesh->testRayCollision(map[i]->model, origin, dir,
+			coll, normal)) {
+			pos = coll;
+		}
+	}
 
-	Vector3 up = Vector3(0, 1, 0);
-	Vector3 pos = RayPlaneCollision(Vector3(),up,orgin,dir);
+	Mesh* mesh; 
+	Texture* texture;
+	if (type == BAD) {
 
-	Mesh* mesh = Mesh::Get("data/obstacle.obj");
+		mesh= Mesh::Get("data/meshes/obstacle.obj");
 
-	Texture* texture = Texture::Get("data/obstacle.png");
-	Shader* shader=Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
-	Vector4 color = Vector4(1, 1, 1, 1);
+		texture= Texture::Get("data/textures/obstacle.png");
+
+	}
+	else if(type==GOOD){
+
+		mesh = Mesh::Get("data/meshes/good.obj");
+
+		texture = Texture::Get("data/textures/good.png");
+	
+	}
+	
+
+
+	Shader* shader= Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+	Vector4 color= Vector4(1, 1, 1, 1);
 
 	
-	
-	//for (size_t i = 0; i < Obstacles.size(); i++)
-	//{
-	//	if (Obstacles.at(i)->model.ra(orgin.v, dir.v, true, 0, 100) == true) {
-	//		
-	//	}
-	//
-	//}
-	
-	EntityMesh* obstacle = new EntityMesh(mesh, texture, shader, color);
+	Obstacle* obstacle = new Obstacle(mesh, texture, shader, color, type);
 	obstacle->model.setTranslation(pos.x, pos.y, pos.z);
+	obstacle->model.setUpAndOrthonormalize(-1*normal);
 	obstacles.push_back(obstacle);
 
-	
 }
 
 void World::update(double seconds_elapsed) {
@@ -247,7 +265,8 @@ void World::update(double seconds_elapsed) {
 		if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) camera->move(Vector3(0.0f, 0.0f, -1.0f) * camSpeed);
 		if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) camera->move(Vector3(1.0f, 0.0f, 0.0f) * camSpeed);
 		if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) camera->move(Vector3(-1.0f, 0.0f, 0.0f) * camSpeed);
-		if (Input::wasKeyPressed(SDL_SCANCODE_C)) addObstacle();
+		if (Input::wasKeyPressed(SDL_SCANCODE_C)) addObstacle(BAD);
+		if (Input::wasKeyPressed(SDL_SCANCODE_V)) addObstacle(GOOD);
 	}
 	else
 	{
@@ -266,13 +285,20 @@ void World::update(double seconds_elapsed) {
 	{
 		if (checkCol(obstacles[i], player.pos)){
 
-			std::cout << "collision!" << "\n";
-			if (player.speed.z > 0.2) {
-				player.speed.z = player.speed.z / 2;
+			std::cout << "collision!" << "\n";	
+		
+			if (obstacles[i]->type == BAD) {
+				if (player.speed.z > 0.2) {
+					player.speed.z = player.speed.z / 2;
+				}
+				else {
+				player.speed.z = 0.2;
+				}
 			}
 			else {
-				player.speed.z = 0.2;
+				std::cout << "Bien" << "\n";
 			}
+			
 		}
 	}
 
