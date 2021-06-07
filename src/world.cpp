@@ -115,7 +115,7 @@ void World::render() {
 
 	Matrix44 playerModel;// = player.entity->model;
 	playerModel.rotate(player.rot * DEG2RAD, Vector3(0.0, 0.0, 1.0));
-	playerModel.setUpAndOrthonormalize(-1 * player.normal);
+	//playerModel.setUpAndOrthonormalize(-1 * player.normal);
 	std::cout << player.rot << "\n";
 
 	playerModel.translate(player.pos.x, player.pos.y, player.pos.z);
