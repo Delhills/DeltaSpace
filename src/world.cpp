@@ -116,7 +116,7 @@ void World::render() {
 	Matrix44 playerModel;// = player.entity->model;
 	playerModel.rotate(player.rot * DEG2RAD, Vector3(0.0, 0.0, 1.0));
 	//playerModel.setUpAndOrthonormalize(-1 * player.normal);
-	std::cout << player.rot << "\n";
+	//std::cout << player.rot << "\n";
 
 	playerModel.translate(player.pos.x, player.pos.y, player.pos.z);
 
@@ -204,30 +204,33 @@ void World::addObstacle(eObstacleType type) {
 	{
 		if (map[i]->mesh->testRayCollision(map[i]->model, origin, dir,
 			coll, normal)) {
-			pos = coll;
+			pos = coll + Vector3(-0.3, -0.3, -0.3) * normal;
 		}
 	}
 
 	Mesh* mesh; 
 	Texture* texture;
+	Shader* shader;
 	if (type == BAD) {
 
 		mesh= Mesh::Get("data/meshes/obstacle.obj");
 
 		texture= Texture::Get("data/textures/obstacle.png");
 
+		shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+
 	}
 	else if(type==GOOD){
 
 		mesh = Mesh::Get("data/meshes/good.obj");
 
-		texture = Texture::Get("data/textures/good.png");
+		texture = Texture::getWhiteTexture();
+
+		shader = Shader::Get("data/shaders/basic.vs", "data/shaders/turbo.fs");
 	
 	}
 	
-
-
-	Shader* shader= Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+	
 	Vector4 color= Vector4(1, 1, 1, 1);
 
 	

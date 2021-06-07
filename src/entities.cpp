@@ -1,4 +1,5 @@
 #include "entities.h"
+#include "game.h"
 Entity::Entity() {
 	this->entity_type = NONE;
 }
@@ -35,6 +36,11 @@ void EntityMesh::render() {
 	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 	shader->setTexture("u_texture", this->texture, 0);
 	shader->setUniform("u_color", this->color);
+	float time = Game::instance->time;
+	//std::cout << time << "\n";
+	shader->setUniform("u_time", time);
+	//shader->setUniform("u_Res", Vector2();
+	
 	//render the mesh using the shader
 	mesh->render(GL_TRIANGLES);
 
