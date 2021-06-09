@@ -1,5 +1,5 @@
 
-Niveles y tal
+Niveles y tal(cargar escena JSON)
 
 Modelo de nave
 
