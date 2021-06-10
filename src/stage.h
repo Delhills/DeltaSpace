@@ -18,6 +18,8 @@ public:
 
 class MenuStage : public Stage {
 public:
+	Camera menu_cam;
+	EntityMesh person;
 	MenuStage();
 	void Render();
 	void Update(double seconds_elapsed);

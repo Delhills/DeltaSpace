@@ -7,7 +7,7 @@
 #include "texture.h"
 #include "shader.h"
 #include "camera.h"
-
+#include "animation.h"
 
 
 enum eEntityType {
@@ -35,7 +35,7 @@ public:
 	//methods
 	void addChild(Entity* ent);
 	void removeChild(Entity* ent);
-
+	
 	//Vector3 getPosition();
 };
 
@@ -51,6 +51,7 @@ public:
 	EntityMesh(Mesh* mesh, Texture* texture, Shader* shader, Vector4 color);
 	void render();
 	void render(Matrix44 model);
+	void render_anim(Animation* anim);
 	void update(float dt);
 };
 

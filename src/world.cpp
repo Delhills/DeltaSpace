@@ -119,12 +119,13 @@ void World::render() {
 	//std::cout << player.rot << "\n";
 
 	playerModel.translate(player.pos.x, player.pos.y, player.pos.z);
-
+	
 	glDisable(GL_DEPTH_TEST);
 	Matrix44 skyModel;
 	skyModel.translate(camera->eye.x, camera->eye.y, camera->eye.z);
 	sky->render(skyModel);
 	glEnable(GL_DEPTH_TEST);
+
 
 	renderMap();
 	renderObstacles();
