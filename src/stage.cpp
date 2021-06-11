@@ -16,7 +16,7 @@ void Stage::NextStage() {
 MenuStage::MenuStage() {
 
 	Texture* texture = Texture::Get("data/textures/person4.png");
-	Mesh* mesh = Mesh::Get("data/meshes/person.obj");
+	Mesh* mesh = Mesh::Get("data/meshes/character.mesh");
 	Shader* shader = Shader::Get("data/shaders/skinning.vs", "data/shaders/texture.fs");
 	Vector4 color = Vector4(1, 1, 1, 1);
 	this->person = EntityMesh(mesh, texture, shader, color);

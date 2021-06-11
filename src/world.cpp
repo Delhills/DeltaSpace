@@ -114,7 +114,7 @@ void World::render() {
 	camera->enable();
 
 	Matrix44 playerModel;// = player.entity->model;
-	playerModel.rotate(player.rot * DEG2RAD, Vector3(0.0, 0.0, 1.0));
+	playerModel.rotate( player.rot * DEG2RAD, Vector3(0.0, 0.0, 1.0));
 	//playerModel.setUpAndOrthonormalize(-1 * player.normal);
 	//std::cout << player.rot << "\n";
 
@@ -142,7 +142,6 @@ void World::render() {
 		camera->lookAt(eye, center, up);
 	}
 
-	
 
 	drawText(5, Game::instance->window_height - 25, std::to_string(player.speed.z * 1000) + " Km/h", Vector3(1, 1, 1), 3);
 	if (done) drawText(Game::instance->window_width / 2 - 300, Game::instance->window_height / 2 - 20, "Has ganado ", Vector3(1, 1, 0), 10);
