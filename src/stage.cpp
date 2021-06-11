@@ -22,7 +22,8 @@ MenuStage::MenuStage() {
 	this->person = EntityMesh(mesh, texture, shader, color);
 	person.model.setTranslation(0.0f, 0.0f, 0.0f);
 
-
+	this->dance = false;
+	this->time_dance = 0.0f;
 	this->menu_cam = Camera();
 	menu_cam.lookAt(Vector3(0.f, 2.0f, 2.0f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
 	menu_cam.setPerspective(70.f, Game::instance->window_width / (float)Game::instance->window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
@@ -42,12 +43,31 @@ void MenuStage::Render()
 	glDisable(GL_DEPTH_TEST);
 
 	Animation* fall = Animation::Get("data/anims/animations_falling.skanim");
+	Animation* flair = Animation::Get("data/anims/animations_flair.skanim");
 
-	fall->assignTime(Game::instance->time);
-	this->person.render_anim(fall);
+	float t = fmod(Game::instance->time, 1.5) / 1.5;
+
+	fall->assignTime(t * fall->duration);
+	flair->assignTime(t * flair->duration);
+
+	std::cout << fall->duration << "\n";
+
+	if (this->dance) {
+		if (this->time_dance < 1)this->time_dance += Game::instance->elapsed_time*2;	
+	}
+	else {
+		if (this->time_dance > 0)this->time_dance -= Game::instance->elapsed_time*2;
+	}
+
+	//creamos esqueleto intermedio para contener la postura blendeada
+	Skeleton blended_skeleton;
+
+	//y blendeamos entre animA y animB con peso 0.5 y lo guardamos en blended_skeleton
+	blendSkeleton(&fall->skeleton, &flair->skeleton, this->time_dance, &blended_skeleton);
+
+	this->person.render_anim(&blended_skeleton);
 
 	drawText(Game::instance->window_width / 2 - 300, Game::instance->window_height / 2 - 20, "Z para continuar ", Vector3(1, 1, 0), 10);
-
 
 	//swap between front buffer and back buffer
 	SDL_GL_SwapWindow(Game::instance->window);
@@ -56,6 +76,8 @@ void MenuStage::Render()
 void MenuStage::Update(double seconds_elapsed) {
 
 	if (Input::wasKeyPressed(SDL_SCANCODE_Z)) NextStage();
+	if (Input::wasKeyPressed(SDL_SCANCODE_1)) this->dance = !this->dance;
+		
 }
 
  PlayStage::PlayStage(World world) {

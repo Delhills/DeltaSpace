@@ -20,6 +20,8 @@ class MenuStage : public Stage {
 public:
 	Camera menu_cam;
 	EntityMesh person;
+	bool dance;
+	float time_dance;
 	MenuStage();
 	void Render();
 	void Update(double seconds_elapsed);

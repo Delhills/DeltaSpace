@@ -52,6 +52,7 @@ public:
 	void render();
 	void render(Matrix44 model);
 	void render_anim(Animation* anim);
+	void render_anim(Skeleton* skel);
 	void update(float dt);
 };
 
