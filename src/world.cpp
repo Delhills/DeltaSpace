@@ -66,6 +66,8 @@ World::World() {
 	mesh = Mesh::Get("data/meshes/obstacle.obj");
 	texture = Texture::Get("data/textures/obstacle.png");
 
+	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/top.fs");
+
 	puntito = new EntityMesh(mesh, texture, shader, color);
 	
 	//create our camera
@@ -115,7 +117,7 @@ void World::render() {
 
 	Matrix44 playerModel;// = player.entity->model;
 	playerModel.rotate(player.rot * DEG2RAD, Vector3(0.0, 0.0, 1.0));
-	//playerModel.setUpAndOrthonormalize(-1 * player.normal);
+	//playerModel.setUpAndOrthonormalize(player.normal);
 	//std::cout << player.rot << "\n";
 
 	playerModel.translate(player.pos.x, player.pos.y, player.pos.z);
@@ -154,7 +156,8 @@ void World::render() {
 	//render the FPS, Draw Calls, etc
 	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
 
-	
+	renderGUI(100, 100, 100, 100, false, Texture::Get("data/gui/atlasGUI.png"), Vector4(0.003, 0.118, 0.0995, 0.1015));
+	//renderGUI(200, 100, 100, 100, false, Texture::Get("data/gui/atlasGUI.png"), Vector4(0.1065, 0.118, 0.0995, 0.1015));
 	//swap between front buffer and back buffer
 	SDL_GL_SwapWindow(Game::instance->window);
 }
@@ -167,6 +170,66 @@ void World::renderMap() {
 		map[i]->render();
 	}
 
+}
+
+void World::renderGUI(float x, float y, float w, float h, bool flip, Texture* texture, Vector4 range) {
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC0_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	int width = Game::instance->window_width;
+	int height = Game::instance->window_height;
+	Camera cameraGUI;
+	cameraGUI.setOrthographic(0, width, height, 0, -1, 1);
+	cameraGUI.enable();
+
+
+	Mesh quad;
+	quad.createQuad(x, y, w, h, flip);
+
+	Vector2 mousepos = Input::mouse_position;
+	float halfW = w * 0.5;
+	float halfH = h * 0.5;
+	float min_x = x - halfW;
+	float min_y = y - halfH;
+	float max_x = x + halfW;
+	float max_y = y + halfH;
+
+	bool hover = mousepos.x > min_x && mousepos.y > min_y && mousepos.x < max_x && mousepos.y < max_y;
+
+
+	//std::cout << Input::isMousePressed(0) << ", " << Input::isMousePressed(1) << ", " << Input::isMousePressed(2) << "\n";
+
+	if (hover && Input::isMousePressed(1)) {
+		player.pos = Vector3(0, 0, 0); 
+		done = false;
+	}
+
+	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/gui.fs");
+
+	shader->enable();
+
+	shader->setUniform("u_texture_tiling", 1.0f);
+	Matrix44 quadModel;
+	shader->setUniform("u_model", quadModel);
+	shader->setUniform("u_viewprojection", cameraGUI.viewprojection_matrix);
+	shader->setTexture("u_texture", texture, 0);
+	shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+	shader->setUniform("u_tex_range", hover ? range + Vector4(0.1035, 0, 0, 0) : range);
+	//shader->setUniform("u_Res", Vector2();
+
+	//render the mesh using the shader
+	//mesh->render(GL_TRIANGLES);
+
+	quad.render(GL_TRIANGLES);
+
+	shader->disable();
+
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
 }
 
 void World::renderObstacles() {
@@ -323,9 +386,9 @@ void World::ComputePos() {
 	Vector3 coll, normal;
 	for (size_t i = 0; i < mapSize; i++)
 	{
-		if (map[i]->mesh->testRayCollision(map[i]->model, player.pos, -1 * player.entity->model.topVector(),
+		if (map[i]->mesh->testRayCollision(map[i]->model, Vector3(0.0, 0.0, player.pos.z), -1 * player.entity->model.topVector(),
 			coll, normal)) {
-			player.pos = coll;
+			player.pos = coll;// +Vector3(-5, -5, -5) * normal;;
 			player.normal = normal;
 		}
 	}
@@ -354,6 +417,8 @@ void World::RenderMinimap() {
 	Matrix44 puntitoModel;
 	puntitoModel.setTranslation(player.pos.x, player.pos.y, player.pos.z);
 	puntitoModel.rotate(90*DEG2RAD,Vector3(1,0,0));
+	//puntitoModel.setUpAndOrthonormalize(player.normal);
+	std::cout << player.normal.x << ", " << player.normal.y << ", " << player.normal.z << ", " << "\n";
 	this->puntito->render(puntitoModel);
 
 	
