@@ -2,7 +2,7 @@
 #include "game.h"
 #include "input.h"
 #include "animation.h"
-
+#include "audio.h"
 
 Stage::Stage() {}
 
@@ -15,6 +15,11 @@ void Stage::NextStage() {
 
 MenuStage::MenuStage() {
 
+	if (BASS_Init(-1, 44100, 0, 0, NULL) == false) //-1 significa usar el por defecto del sistema operativo
+	{
+		//error abriendo la tarjeta de sonido...
+	}
+	Audio::Get("data/sound/baile.mp3");
 	Texture* texture = Texture::Get("data/textures/person4.png");
 	Mesh* mesh = Mesh::Get("data/meshes/character.mesh");
 	Shader* shader = Shader::Get("data/shaders/skinning.vs", "data/shaders/texture.fs");
@@ -50,8 +55,6 @@ void MenuStage::Render()
 	fall->assignTime(t * fall->duration);
 	flair->assignTime(t * flair->duration);
 
-	std::cout << fall->duration << "\n";
-
 	if (this->dance) {
 		if (this->time_dance < 1)this->time_dance += Game::instance->elapsed_time*2;	
 	}
@@ -76,7 +79,10 @@ void MenuStage::Render()
 void MenuStage::Update(double seconds_elapsed) {
 
 	if (Input::wasKeyPressed(SDL_SCANCODE_Z)) NextStage();
-	if (Input::wasKeyPressed(SDL_SCANCODE_1)) this->dance = !this->dance;
+	if (Input::wasKeyPressed(SDL_SCANCODE_1)) { 
+		this->dance = !this->dance; 
+		Audio::Play("data/sound/baile.mp3");
+	};
 		
 }
 

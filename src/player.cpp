@@ -2,8 +2,8 @@
 
 Player::Player()
 {
-	Texture* texture = Texture::Get("data/textures/person4.png");
-	Mesh* mesh = Mesh::Get("data/meshes/person.obj");
+	Texture* texture = Texture::Get("data/textures/player2.png");
+	Mesh* mesh = Mesh::Get("data/meshes/player.obj");
 	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 	Vector4 color = Vector4(1, 1, 1, 1);
 

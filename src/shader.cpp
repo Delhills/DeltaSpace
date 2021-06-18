@@ -118,6 +118,8 @@ Shader* Shader::Get(const char* vsf, const char* psf, const char* macros)
 	else
 		name = vsf;
 	std::map<std::string,Shader*>::iterator it = s_Shaders.find(name);
+
+
 	if (it != s_Shaders.end())
 		return it->second;
 

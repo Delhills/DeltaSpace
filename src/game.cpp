@@ -40,18 +40,6 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	glEnable( GL_CULL_FACE ); //render both sides of every triangle
 	glEnable( GL_DEPTH_TEST ); //check the occlusions using the Z buffer
 
-	
-
-	//load one texture without using the Texture Manager (Texture::Get would use the manager)
-	texture = new Texture();
- 	texture->load("data/texture.tga");
-
-	// example of loading Mesh from Mesh Manager
-	mesh = Mesh::Get("data/box.ASE");
-
-	// example of shader loading using the shaders manager
-	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
-
 	world = new World();
 	
 	this->stages.push_back(new MenuStage);
