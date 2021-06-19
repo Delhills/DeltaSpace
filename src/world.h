@@ -40,7 +40,6 @@ public:
 	bool checkCol(EntityMesh* obstacle, Vector3 playerPos);
 	void ComputePos();
 	void RenderMinimap();
-	
 	//void clear();
 	//void addEntity(Entity* entity);
 
