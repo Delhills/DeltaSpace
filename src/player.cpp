@@ -14,21 +14,21 @@ Player::Player()
 	this->normal = Vector3(0, 1, 0);
 	this->turn_speed_coef = -50;
 	this->speed_coef = 10;
-	this->max_speed = 1;
-	this->min_speed = 0.2;
+	this->max_speed = 100;
+	this->min_speed = 20;
 }
 
 void Player::Render() {
 	this->entity->render(this->entity->model);
 }
 
-void Player::accelerate(float seconds_elapsed)
+void Player::accelerate(float dir)
 {
-	max_speed += seconds_elapsed*0.05;
-	float vel = seconds_elapsed * speed_coef;
+	float vel = dir * speed_coef;
 	float finalspeed = lerp(this->speed.z, this->speed.z + vel, 0.08);
 	this->speed.z = clamp(finalspeed, min_speed, max_speed);
 }
+
 void Player::turn(float seconds_elapsed)
 {
 	float vel = seconds_elapsed * turn_speed_coef;
