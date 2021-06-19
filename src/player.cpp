@@ -9,43 +9,28 @@ Player::Player()
 
 	entity = new EntityMesh(mesh, texture, shader, color);
 	pos = Vector3(0, 0, 0);
-	//rotation = entity->model.getRotationOnly();
-	rot = 0.0f;
+	
 	this->speed = Vector3(0, 0, 0);
-	this->normal = Vector3(0,1,0);
+	this->normal = Vector3(0, 1, 0);
+	this->turn_speed_coef = -50;
+	this->speed_coef = 10;
+	this->max_speed = 1;
+	this->min_speed = 0.2;
 }
 
 void Player::Render() {
 	this->entity->render(this->entity->model);
 }
 
-float max_speed = 1;
-float min_speed = 0.2;
-float turn_speed = 0.5;
-
-void Player::accelerate(float delta)
+void Player::accelerate(float seconds_elapsed)
 {
-	float finalspeed = lerp(this->speed.z, this->speed.z + delta, 0.08);
+	max_speed += seconds_elapsed*0.05;
+	float vel = seconds_elapsed * speed_coef;
+	float finalspeed = lerp(this->speed.z, this->speed.z + vel, 0.08);
 	this->speed.z = clamp(finalspeed, min_speed, max_speed);
 }
-void Player::turn(float delta)
-{	
-	//float finalspeed = lerp(this->speed.x, this->speed.x + delta, 0.5);
-	//this->speed.x = clamp(finalspeed, -this->speed.z* turn_speed, this->speed.z* turn_speed);
-	
-	this->rot += delta;
-
-	if (this->rot > 360) {
-		this->rot -= 360;
-	}
-
-	if (this->rot < -360) {
-		this->rot += 360;
-	}
-	//Vector3 coll;
-	
-	//RaySphereCollision(Vector3(0.0, 0.0, this->pos.z), 14, this->pos, (this->entity->model.topVector() * -1), coll);
-	//std::cout << coll.x << ", " << coll.y << ", " << coll.z << ", " << "\n";
-	//this->pos = coll;
-	//this->pos.x = clamp(this->pos.x, -9.2, 9.85);
+void Player::turn(float seconds_elapsed)
+{
+	float vel = seconds_elapsed * turn_speed_coef;
+	entity->model.rotateGlobal(vel * DEG2RAD, Vector3(0, 0, -1));
 }

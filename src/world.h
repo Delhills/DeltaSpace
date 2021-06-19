@@ -23,13 +23,13 @@ public:
 
 	Player player;
 	bool freecam;
+	bool done;
+	bool alive;
 	EntityMesh* goal;
 	EntityMesh* map[mapSize];
 	std::vector<Obstacle*> obstacles;
-	EntityMesh* bars[2 * mapSize];
 	EntityMesh* sky;
 	EntityMesh* puntito;
-
 	Camera* camera; //our global camera
 	World();
 	void renderMap();
@@ -40,7 +40,7 @@ public:
 	bool checkCol(EntityMesh* obstacle, Vector3 playerPos);
 	void ComputePos();
 	void RenderMinimap();
-	bool done;
+	
 	//void clear();
 	//void addEntity(Entity* entity);
 
