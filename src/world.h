@@ -33,6 +33,7 @@ public:
 	Camera* camera; //our global camera
 	World();
 	void renderMap();
+	void renderGUI(float x, float y, float w, float h, bool flip, Texture* texture, Vector4 range);
 	void render();
 	void update(double seconds_elapsed);
 	void addObstacle(eObstacleType type);

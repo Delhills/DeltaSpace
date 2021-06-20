@@ -112,6 +112,8 @@ void EntityMesh::render(Matrix44 model)
 	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 	shader->setTexture("u_texture", this->texture, 0);
 	shader->setUniform("u_color", this->color);
+	
+	shader->setUniform("u_topVector", model.topVector());
 	//render the mesh using the shader
 	mesh->render(GL_TRIANGLES);
 
