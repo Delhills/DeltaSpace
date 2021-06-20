@@ -11,7 +11,7 @@ Audio::Audio(HSAMPLE sample) {
 }
 
 
-Audio* Audio::Get(const char* filename) 
+Audio* Audio::Get(const char* filename)
 {
 	//check if loaded
 	auto it = sLoadedAudios.find(filename);
@@ -35,8 +35,10 @@ bool Audio::load(const std::string& filename)
 {
 	std::cout << " +Audio: " << filename << std::endl;
 	
-	HSAMPLE hsample= BASS_SampleLoad( false, "data/sound/baile.mp3",0, 0, 3, 0);
+	HSAMPLE hsample= BASS_SampleLoad( false, filename.c_str(),0, 0, 3, 0);
+
 	if (hsample == 0) {
+		std::cout << " ERROR LOADING : " << filename << std::endl;
 		return false;
 	}
 
@@ -46,7 +48,7 @@ bool Audio::load(const std::string& filename)
 	return true;
 }
 
-HCHANNEL* Audio::Play(const char* filename) 
+HCHANNEL* Audio::Play(const char* filename)
 {
 	Audio* audio = Get(filename);
 
@@ -55,4 +57,21 @@ HCHANNEL* Audio::Play(const char* filename)
 	BASS_ChannelPlay(hSampleChannel,true);
 
 	return &hSampleChannel;
+}
+
+void Audio::Stop()
+{
+	BASS_Pause();
+	BASS_Stop();
+	BASS_Start();
+}
+
+void Audio::Pause()
+{
+	BASS_Pause();
+}
+
+void Audio::UnPause()
+{
+	BASS_Start();
 }

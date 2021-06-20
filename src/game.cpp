@@ -22,6 +22,8 @@ FBO* fbo = NULL;
 Game* Game::instance = NULL;
 World* world = nullptr;
 
+
+
 Game::Game(int window_width, int window_height, SDL_Window* window)
 {
 	this->window_width = window_width;
@@ -49,6 +51,8 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	this->currentStage = INTRO;
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
+
+	
 }
 
 //what to do when the image has to be draw

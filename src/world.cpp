@@ -13,8 +13,10 @@ World::World() {
 	freecam = false;
 	done = false;
 	alive = true;
+	ground_timer = 0;
 	Texture* texture = Texture::Get("data/textures/export.png");
 	Mesh* mesh = Mesh::Get("data/meshes/tubo.obj");
+
 	Mesh* mesh_up = Mesh::Get("data/meshes/tubo_up.obj");
 	Mesh* mesh_down = Mesh::Get("data/meshes/tubo_down.obj");
 	Mesh* mesh_left = Mesh::Get("data/meshes/tubo_left.obj");
@@ -48,14 +50,14 @@ World::World() {
 	texture = Texture::Get("data/textures/meta.png");
 	mesh = Mesh::Get("data/meshes/meta.obj");
 	EntityMesh* goal = new EntityMesh(mesh, texture, shader, color);
-	goal->model.setTranslation(0, 0, mapSize * (-padding.z - offset) + 35);
+	goal->model.setTranslation(0, 0, mapSize * (-padding.z - offset) + 30);
 	this->goal = goal;
 
 
 	player = Player();
 	Vector3 paddingPlayer = player.entity->mesh->box.halfsize;
 	//player.entity->model.setTranslation(0, paddingPlayer.y/10, 0);
-	player.entity->model.setTranslation(0, -10, 0);
+	player.entity->model.setTranslation(0, -13, 0);
 
 	texture = Texture::Get("data/textures/SkySkybox.png");
 	mesh = Mesh::Get("data/meshes/esfera.obj");
@@ -81,40 +83,16 @@ void World::render() {
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//set the camera as default
 
 	//set flags
 	glDisable(GL_BLEND);
 
 	glDisable(GL_CULL_FACE);
-	//create model matrix for cube
-	//Matrix44 m;
-	//m.rotate(angle*DEG2RAD, Vector3(0, 1, 0));
 
-	//if(shader)
-	//{
-	//	//enable shader
-	//	shader->enable();
-
-	//	//upload uniforms
-	//	shader->setUniform("u_color", Vector4(1,1,1,1));
-	//	shader->setUniform("u_viewprojection", camera->viewprojection_matrix );
-	//	shader->setUniform("u_texture", texture, 0);
-	//	shader->setUniform("u_model", m);
-	//	shader->setUniform("u_time", time);
-
-	//	//do the draw call
-	//	mesh->render( GL_TRIANGLES );
-
-	//	//disable shader
-	//	shader->disable();
-	//}
 
 	camera->enable();
 
 	Matrix44 playerModel = player.entity->model;
-
-	/*playerModel.translate(player.pos.x, player.pos.y, player.pos.z);*/
 
 	glDisable(GL_DEPTH_TEST);
 	Matrix44 skyModel;
@@ -132,18 +110,17 @@ void World::render() {
 
 	if (!freecam) {
 
-		Vector3 one = playerModel * Vector3(0.0f, 7.0f, 10.0f);
-		Vector3 two = camera->eye;
-		float eye_x = lerp(two.x,one.x, 0.02);
-		float eye_y = lerp(two.y, one.y, 0.02);
+		Vector3 newEye = playerModel * Vector3(0.0f, 7.0f, 10.0f);
+		newEye.x = lerp(camera->eye.x, newEye.x, 2*Game::instance->elapsed_time);
+		newEye.y = lerp(camera->eye.y, newEye.y, 2*Game::instance->elapsed_time);
 
 		Vector3 center = playerModel * Vector3(0.0f, 0.0f, -5.0f);
 		Vector3 up = playerModel.topVector();
-		camera->lookAt(Vector3(eye_x,eye_y,one.z), center, up);
+		camera->lookAt(newEye, center, up);
 	}
 
 
-	drawText(5, Game::instance->window_height - 25, std::to_string(player.speed.z * 1000) + " Km/h", Vector3(1, 1, 1), 3);
+	drawText(5, Game::instance->window_height - 25, std::to_string(player.speed.z * 100) + " Km/h", Vector3(1, 1, 1), 3);
 	if (done) drawText(Game::instance->window_width / 2 - 300, Game::instance->window_height / 2 - 20, "Has ganado ", Vector3(1, 1, 0), 10);
 
 
@@ -155,14 +132,12 @@ void World::render() {
 	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
 
 	renderGUI(100, 100, 100, 100, false, Texture::Get("data/gui/atlasGUI.png"), Vector4(0.003, 0.118, 0.0995, 0.1015));
-	//renderGUI(200, 100, 100, 100, false, Texture::Get("data/gui/atlasGUI.png"), Vector4(0.1065, 0.118, 0.0995, 0.1015));
-
+	
 	//swap between front buffer and back buffer
 	SDL_GL_SwapWindow(Game::instance->window);
 }
 
 void World::renderMap() {
-	//Matrix44 model = islas[0]->model;
 
 	for (size_t i = 0; i < mapSize; i++)
 	{
@@ -197,13 +172,8 @@ void World::renderGUI(float x, float y, float w, float h, bool flip, Texture* te
 
 	bool hover = mousepos.x > min_x && mousepos.y > min_y && mousepos.x < max_x && mousepos.y < max_y;
 
-
-	//std::cout << Input::isMousePressed(0) << ", " << Input::isMousePressed(1) << ", " << Input::isMousePressed(2) << "\n";
-
-	if (hover && Input::isMousePressed(1)) {
-		player.pos = Vector3(0, 0, 0); 
-		done = false;
-	}
+	if (hover && Input::isMousePressed(1)) Restart();
+	
 
 	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/gui.fs");
 
@@ -216,10 +186,6 @@ void World::renderGUI(float x, float y, float w, float h, bool flip, Texture* te
 	shader->setTexture("u_texture", texture, 0);
 	shader->setUniform("u_color", Vector4(1, 1, 1, 1));
 	shader->setUniform("u_tex_range", hover ? range + Vector4(0.1035, 0, 0, 0) : range);
-	//shader->setUniform("u_Res", Vector2();
-
-	//render the mesh using the shader
-	//mesh->render(GL_TRIANGLES);
 
 	quad.render(GL_TRIANGLES);
 
@@ -232,7 +198,6 @@ void World::renderGUI(float x, float y, float w, float h, bool flip, Texture* te
 }
 
 void World::renderObstacles() {
-	//Matrix44 model = islas[0]->model;
 
 	for (size_t i = 0; i < obstacles.size(); i++)
 	{
@@ -266,8 +231,10 @@ void World::addObstacle(eObstacleType type) {
 	{
 		if (map[i]->mesh->testRayCollision(map[i]->model, origin, dir,
 			coll, normal)) {
-			pos = coll + Vector3(-0.3, -0.3, -0.3) * normal;
+			
+			pos = coll + Vector3(0.6, 0.6, 0.6) * normal;
 		}
+		
 	}
 
 	Mesh* mesh;
@@ -298,7 +265,7 @@ void World::addObstacle(eObstacleType type) {
 
 	Obstacle* obstacle = new Obstacle(mesh, texture, shader, color, type);
 	obstacle->model.setTranslation(pos.x, pos.y, pos.z);
-	obstacle->model.setUpAndOrthonormalize(-1 * normal);
+	obstacle->model.setUpAndOrthonormalize(normal);
 	obstacles.push_back(obstacle);
 
 }
@@ -308,7 +275,7 @@ void World::update(double seconds_elapsed) {
 	bool mouse_locked = Game::instance->mouse_locked;
 	float camSpeed = seconds_elapsed * mouse_speed; //the speed is defined by the seconds_elapsed so it goes constant
 
-
+	
 	//mouse input to rotate the cam
 	if ((Input::mouse_state & SDL_BUTTON_LEFT) || mouse_locked) //is left button pressed?
 	{
@@ -318,12 +285,29 @@ void World::update(double seconds_elapsed) {
 
 	//async input to move the camera around
 	if (Input::wasKeyPressed(SDL_SCANCODE_1)) freecam = !freecam; //move faster with left shift
-	if (Input::wasKeyPressed(SDL_SCANCODE_0)) { player.entity->model.setTranslation(0, -10, 0);  done = false; alive = true; }//move faster with left shift
+	if (Input::wasKeyPressed(SDL_SCANCODE_0)) Restart();
+		
+
+	if (!onGround()) {
+
+		ground_timer += seconds_elapsed;
+
+		if (ground_timer > 0.15) {
+
+			this->alive = false;
+		}
+	}
+	else {
+		ground_timer = 0;
+	}
+
+	if (done && ground_timer > 0.15) { 
+		SendFlying();
+		return;
+	}
 
 	if (!alive) {
-		Vector3 top = -1 * player.entity->model.topVector();
-		player.entity->model.translate(top.x, top.y, top.z);
-		player.entity->model.rotate(DEG2RAD / 2, Vector3(1, 1, 1));
+		SendFlying();
 		return;
 	}
 
@@ -339,13 +323,24 @@ void World::update(double seconds_elapsed) {
 	}
 	else
 	{
-		if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) player.accelerate(1.0);
-		else if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) player.accelerate(-1.0);
+		if (player.speed.z > player.max_speed) { 
+			//Si tienes tubo no puedes acelerar ni frenar
+			player.speed.z -= seconds_elapsed * 100;
+		}
+		else
+		{
+			if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) player.accelerate(1.0);
+			else if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) player.accelerate(-1.0);
+		}
+
 
 		if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) player.turn(seconds_elapsed);
 		else if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) player.turn(-seconds_elapsed);
+		
 
-		player.entity->model.translate(0, 0, -player.speed.z*seconds_elapsed);
+
+		player.entity->model.translate(0, 0, -player.speed.z * seconds_elapsed);
+		
 		player.pos = player.entity->model.getTranslation();
 
 	}
@@ -354,19 +349,7 @@ void World::update(double seconds_elapsed) {
 	{
 		if (checkCol(obstacles[i], player.pos)) {
 
-			std::cout << "collision!" << "\n";
-
-			if (obstacles[i]->type == BAD) {
-				if (player.speed.z > 0.2) {
-					player.speed.z = player.speed.z / 2;
-				}
-				else {
-					player.speed.z = 0.2;
-				}
-			}
-			else {
-				std::cout << "Bien" << "\n";
-			}
+			onObstacle(obstacles[i]->type);
 
 		}
 	}
@@ -381,24 +364,56 @@ void World::update(double seconds_elapsed) {
 	if (mouse_locked)
 		Input::centerMouse();
 
-	ComputePos();
 }
 
-void World::ComputePos() {
+void World::onObstacle(eObstacleType type) {
+
+	switch (type)
+	{
+	case BAD:
+		if (player.speed.z > 20) {
+			player.speed.z = player.speed.z / 2;
+		}
+		else {
+			player.speed.z = 20;
+		}
+		break;
+
+	case GOOD:
+		std::cout << "nice" << "\n";
+		player.speed.z = 300;
+		break;
+
+	default:
+		break;
+	}
+
+}
+
+void World::SendFlying() {
+
+	Vector3 top = -1 * player.entity->model.topVector();
+	player.entity->model.translate(top.x, top.y, top.z);
+	player.entity->model.rotate(DEG2RAD / 2, Vector3(1, 1, 1));
+
+}
+
+bool World::onGround() {
 
 	Vector3 coll, normal;
-	bool live = false;
+	bool onGround = false;
 	for (size_t i = 0; i < mapSize; i++)
 	{
 		if (map[i]->mesh->testRayCollision(map[i]->model, Vector3(0.0, 0.0, player.pos.z), -1 * player.entity->model.topVector(),
 			coll, normal)) {
 
-			live = true;
+			onGround = true;
 
 		}
 	}
 
-	if (!live) this->alive = false;
+	return onGround;
+
 }
 
 void World::RenderMinimap() {
@@ -431,4 +446,11 @@ void World::RenderMinimap() {
 
 
 	glViewport(0, 0, Game::instance->window_width, Game::instance->window_height);
+}
+
+void World::Restart() {
+	player.entity->model.setTranslation(0, -13, 0);
+	done = false;
+	alive = true;
+	ground_timer = 0;
 }

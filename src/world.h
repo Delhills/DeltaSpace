@@ -25,6 +25,7 @@ public:
 	bool freecam;
 	bool done;
 	bool alive;
+	float ground_timer;
 	EntityMesh* goal;
 	EntityMesh* map[mapSize];
 	std::vector<Obstacle*> obstacles;
@@ -39,8 +40,11 @@ public:
 	void addObstacle(eObstacleType type);
 	void renderObstacles();
 	bool checkCol(EntityMesh* obstacle, Vector3 playerPos);
-	void ComputePos();
+	bool onGround();
 	void RenderMinimap();
+	void SendFlying();
+	void Restart();
+	void onObstacle(eObstacleType type);
 	//void clear();
 	//void addEntity(Entity* entity);
 

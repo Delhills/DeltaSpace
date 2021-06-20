@@ -7,13 +7,20 @@
 #include "utils.h"
 
 
+constexpr auto numSongs = 3;
+
+static char *Songs[numSongs] = { "data/sound/baile.mp3", "data/sound/level1.mp3", "data/sound/choque.mp3" };
+
+enum eSongs {
+	DANCE,
+	SAILOR,
+	COLISION 
+};
+
 
 class Audio
 {
 public:
-
-	 //para nuestro manager
-
 	HSAMPLE sample; //aqui guardamos el handler del sample que retorna BASS_SampleLoad
 
 	Audio();
@@ -25,6 +32,9 @@ public:
 	//static void Stop(HCHANNEL channel); //para parar un audio necesitamos su channel
 	static Audio* Get(const char* filename); //manager de audios 
 	static HCHANNEL* Play(const char* filename); //version estática para ir mas rapido
+	static void Stop();
+	static void Pause();
+	static void UnPause();
 };
 
 static std::map<std::string, Audio*> sLoadedAudios;

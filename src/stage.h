@@ -4,7 +4,8 @@
 enum eStageID {
 	INTRO,
 	LEVEL1,
-	END 
+	END, 
+	EXIT
 };
 
 class Stage

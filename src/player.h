@@ -12,9 +12,9 @@ public:
 	float speed_coef;
 	float max_speed;
 	float min_speed;
+	float turbo_coef;
 	EntityMesh* entity;
 	Vector3 speed;
-	Vector3 normal;
 	Player();
 
 	void turn(float delta);
