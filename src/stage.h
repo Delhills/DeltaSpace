@@ -1,15 +1,17 @@
 #pragma once
 #include "world.h"
+#include "GUI.h"
 
 enum eStageID {
 	INTRO,
 	LEVEL1,
-	END 
+	END
 };
 
 class Stage
 {
 public:
+	GUI gui;
 	Stage();
 	void NextStage();
 	virtual void Render() {};
@@ -27,9 +29,9 @@ public:
 
 class PlayStage : public Stage {
 public:
+	World world;
 	PlayStage(World world);
 	void Render();
-	World world;
 	void Update(double seconds_elapsed);
 };
 
