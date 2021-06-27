@@ -60,32 +60,9 @@ MenuStage::MenuStage() {
 
 	this->dance = false;
 	this->time_dance = 0.0f;
-	
+	this->gui = GUI(eTypeGui::MAIN_MENU);
 	this->camera->lookAt(Vector3(0.f, 2.0f, 2.0f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
 	this->camera->setPerspective(70.f, Game::instance->window_width / (float)Game::instance->window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
-}
-
-MenuStage::MenuStage() {
-
-	if (BASS_Init(-1, 44100, 0, 0, NULL) == false) //-1 significa usar el por defecto del sistema operativo
-	{
-		//error abriendo la tarjeta de sonido...
-	}
-	Audio::Get("data/sound/baile.mp3");
-	Texture* texture = Texture::Get("data/textures/person4.png");
-	Mesh* mesh = Mesh::Get("data/meshes/character.mesh");
-	Shader* shader = Shader::Get("data/shaders/skinning.vs", "data/shaders/texture.fs");
-	Vector4 color = Vector4(1, 1, 1, 1);
-	this->person = EntityMesh(mesh, texture, shader, color);
-
-	person.model.setTranslation(0.6, -0.4f, 0.0f);
-
-	this->dance = false;
-	this->time_dance = 0.0f;
-	this->menu_cam = Camera();
-	this->gui = GUI(eTypeGui::MAIN_MENU);
-	menu_cam.lookAt(Vector3(0.f, 2.0f, 2.0f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
-	menu_cam.setPerspective(70.f, Game::instance->window_width / (float)Game::instance->window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 }
 
 void MenuStage::Render() 
@@ -119,45 +96,16 @@ void MenuStage::Render()
 	//creamos esqueleto intermedio para contener la postura blendeada
 	Skeleton blended_skeleton;
 
-	//y blendeamos entre animA y animB con peso 0.5 y lo guardamos en blended_skeleton
-	blendSkeleton(&fall->skeleton, &flair->skeleton, this->time_dance, &blended_skeleton);
 
-	this->person.render_anim(&blended_skeleton);
-
-	//set flags
-	glDisable(GL_BLEND);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-
-	Animation* fall = Animation::Get("data/anims/animations_falling.skanim");
-	Animation* flair = Animation::Get("data/anims/animations_flair.skanim");
-
-	float t = fmod(Game::instance->time, 1.5) / 1.5;
-
-	fall->assignTime(t * fall->duration);
-	flair->assignTime(t * flair->duration);
-
-	if (this->dance) {
-		if (this->time_dance < 1)this->time_dance += Game::instance->elapsed_time*2;	
-	}
-	else {
-		if (this->time_dance > 0)this->time_dance -= Game::instance->elapsed_time*2;
-	}
-
-	//creamos esqueleto intermedio para contener la postura blendeada
-	Skeleton blended_skeleton;
-
-	//y blendeamos entre animA y animB con peso 0.5 y lo guardamos en blended_skeleton
-	blendSkeleton(&fall->skeleton, &flair->skeleton, this->time_dance, &blended_skeleton);
-
-	//this->person.model.translate(100, 0, 0);
 	float time = Game::instance->time;
-	float i = 0.3*sin(time * PI) - 0.3;
+	float i = 0.3 * sin(time * PI) - 0.3;
 	//std::cout << i << "\n";
 	person.model.setTranslation(0.6f, i, 0.0f);
-	this->person.render_anim(&blended_skeleton);
 
-	//drawText(Game::instance->window_width / 2 - 300, Game::instance->window_height / 2 - 20, "Z para continuar ", Vector3(1, 1, 0), 10);
+	//y blendeamos entre animA y animB con peso 0.5 y lo guardamos en blended_skeleton
+	blendSkeleton(&fall->skeleton, &flair->skeleton, this->time_dance, &blended_skeleton);
+
+	this->person.render_anim(&blended_skeleton);
 
 	gui.RenderGui();
 	//swap between front buffer and back buffer

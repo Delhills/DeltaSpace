@@ -1,11 +1,7 @@
 
-Niveles y tal(cargar escena JSON)
-
-Modelo de nave
+Niveles (quizá alguno mas)
 
 textura tubo
-
-Diferentes Obstaculos 
 
 rivales (IA?)
 
@@ -13,16 +9,12 @@ multijugador
 
 Meta
 
-mas de un vuelta
+bajar Musica/sfx
 
-turbo
-
-gamefeel (camara, nave)
-
-Musica/sfx
-
-GUI
-
-Animaciones?
+GUI ---
 
 Cinematicas?
+
+mejorar caida
+
+Cuenta atrás?

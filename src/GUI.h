@@ -16,7 +16,7 @@ enum eButton {
 	PLAY,
 	PLAY_M,
 	REPLAY,
-	EXIT,
+	EXIT_N,
 	EXIT_M,
 	ACCEPT,
 	WINDOW,

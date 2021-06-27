@@ -451,6 +451,7 @@ void World::RenderMinimap() {
 	mapCam.enable();
 	glDisable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
 
 	renderMap();
 
@@ -462,7 +463,9 @@ void World::RenderMinimap() {
 
 	this->puntito->render(puntitoModel);
 
-
+	glEnable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 
 	glViewport(0, 0, Game::instance->window_width, Game::instance->window_height);
 }
