@@ -6,10 +6,10 @@ enum eStageID {
 	INTRO,
 	LEVEL1,
 	LEVEL2,
-	END, 
+	LEVEL3,
+	END,
 	EXIT
 };
-
 class Stage
 {
 public:

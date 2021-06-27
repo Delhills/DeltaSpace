@@ -4,140 +4,70 @@
 
 	"map": [
 		{
-			"type": "down",
-			"position": 0
+			"type": [ 1, 0, 0, 0 ]
 		},
 		{
-			"type": "down",
-			"position": 1
+			"type": [ 1, 0, 0, 0 ]
 		},
 		{
-			"type": "down",
-			"position": 2
+			"type": [ 1, 0, 0, 0 ]
 		},
 		{
-			"type": "down",
-			"position": 3
+			"type": [ 1, 0, 0, 0 ]
 		},
 		{
-			"type": "down",
-			"position": 4
+			"type": [ 1, 0, 0, 1 ]
 		},
 		{
-			"type": "left",
-			"position": 4
+			"type": [ 0, 0, 0, 1 ]
 		},
 		{
-			"type": "left",
-			"position": 5
+			"type": [ 0, 0, 0, 1 ]
 		},
 		{
-			"type": "left",
-			"position": 6
+			"type": [ 0, 0, 0, 1 ]
 		},
 		{
-			"type": "left",
-			"position": 7
+			"type": [ 0, 0, 1, 1 ]
 		},
 		{
-			"type": "left",
-			"position": 8
+			"type": [ 0, 0, 1, 0 ]
 		},
 		{
-			"type": "up",
-			"position": 8
+			"type": [ 0, 0, 1, 0 ]
 		},
 		{
-			"type": "up",
-			"position": 9
+			"type": [ 0, 0, 1, 0 ]
 		},
 		{
-			"type": "up",
-			"position": 10
+			"type": [ 0, 0, 1, 1 ]
 		},
 		{
-			"type": "up",
-			"position": 11
+			"type": [ 0, 0, 0, 1 ]
 		},
 		{
-			"type": "up",
-			"position": 12
+			"type": [ 0, 0, 0, 1 ]
 		},
 		{
-			"type": "left",
-			"position": 12
+			"type": [ 0, 0, 0, 1 ]
 		},
 		{
-			"type": "left",
-			"position": 13
+			"type": [ 1, 1, 1, 1 ]
 		},
 		{
-			"type": "left",
-			"position": 14
+			"type": [ 1, 1, 1, 0 ]
 		},
 		{
-			"type": "left",
-			"position": 15
+			"type": [ 1, 1, 1, 1 ]
 		},
 		{
-			"type": "up",
-			"position": 15
+			"type": [ 1, 1, 0, 1 ]
 		},
 		{
-			"type": "right",
-			"position": 15
+			"type": [ 1, 0, 0, 0 ]
 		},
 		{
-			"type": "down",
-			"position": 15
-		},
-		{
-			"type": "up",
-			"position": 16
-		},
-		{
-			"type": "right",
-			"position": 16
-		},
-		{
-			"type": "down",
-			"position": 16
-		},
-		{
-			"type": "left",
-			"position": 17
-		},
-		{
-			"type": "right",
-			"position": 17
-		},
-		{
-			"type": "down",
-			"position": 17
-		},
-		{
-			"type": "up",
-			"position": 17
-		},
-		{
-			"type": "left",
-			"position": 18
-		},
-		{
-			"type": "right",
-			"position": 18
-		},
-		{
-			"type": "down",
-			"position": 18
-		},
-		{
-			"type": "down",
-			"position": 19
-		},
-		{
-			"type": "down",
-			"position": 20
+			"type": [ 1, 0, 0, 0 ]
 		}
 	]
 }
