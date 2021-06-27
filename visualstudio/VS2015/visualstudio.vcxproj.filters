@@ -67,6 +67,9 @@
     <ClCompile Include="..\..\src\stage.cpp" />
     <ClCompile Include="..\..\src\audio.cpp" />
     <ClCompile Include="..\..\src\extra\cJSON.cpp" />
+    <ClCompile Include="..\..\src\audio.cpp" />
+    <ClCompile Include="..\..\src\GUI.cpp" />
+	  
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\camera.h" />
@@ -131,6 +134,10 @@
     <ClInclude Include="..\..\src\stage.h" />
     <ClInclude Include="..\..\src\audio.h" />
     <ClInclude Include="..\..\src\extra\cJSON.h" />
+
+    <ClInclude Include="..\..\src\audio.h" />
+    <ClInclude Include="..\..\src\GUI.h" />
+
   </ItemGroup>
   <ItemGroup>
     <Filter Include="extra">

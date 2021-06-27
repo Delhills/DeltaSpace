@@ -1,5 +1,6 @@
 #pragma once
 #include "world.h"
+#include "GUI.h"
 
 enum eStageID {
 	INTRO,
@@ -13,6 +14,7 @@ class Stage
 {
 public:
 	Camera* camera;
+	GUI gui;
 	Stage();
 	void NextStage();
 	virtual void Render() {};
@@ -34,9 +36,9 @@ public:
 
 class PlayStage : public Stage {
 public:
+	World* world;
 	PlayStage(const char* filename);
 	void Render();
-	World* world;
 	void Update(double seconds_elapsed);
 };
 
