@@ -22,8 +22,6 @@ FBO* fbo = NULL;
 Game* Game::instance = NULL;
 World* world = nullptr;
 
-
-
 Game::Game(int window_width, int window_height, SDL_Window* window)
 {
 	this->window_width = window_width;
@@ -42,11 +40,12 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	glEnable( GL_CULL_FACE ); //render both sides of every triangle
 	glEnable( GL_DEPTH_TEST ); //check the occlusions using the Z buffer
 
-	world = new World();
 	
-	this->stages.push_back(new MenuStage);
-	this->stages.push_back(new PlayStage(*world));
-	this->stages.push_back(new EndStage);
+	
+	this->stages.push_back(new MenuStage());
+	this->stages.push_back(new PlayStage("data/levels/level1.json"));
+	this->stages.push_back(new PlayStage("data/levels/level2.json"));
+	this->stages.push_back(new EndStage());
 
 	this->currentStage = INTRO;
 	//hide the cursor
@@ -58,13 +57,11 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 //what to do when the image has to be draw
 void Game::render(void)
 {
-	
 	stages[currentStage]->Render();
 }
 
 void Game::update(double seconds_elapsed)
 {
-	
 	stages[currentStage]->Update(seconds_elapsed);
 }
 
@@ -114,7 +111,9 @@ void Game::onResize(int width, int height)
 {
     std::cout << "window resized: " << width << "," << height << std::endl;
 	glViewport( 0,0, width, height );
-	world->camera->aspect =  width / (float)height;
+
+	stages[currentStage]->camera->aspect = width / (float)height;
+	
 	window_width = width;
 	window_height = height;
 }

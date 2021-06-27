@@ -4,6 +4,7 @@
 enum eStageID {
 	INTRO,
 	LEVEL1,
+	LEVEL2,
 	END, 
 	EXIT
 };
@@ -11,6 +12,7 @@ enum eStageID {
 class Stage
 {
 public:
+	Camera* camera;
 	Stage();
 	void NextStage();
 	virtual void Render() {};
@@ -19,7 +21,7 @@ public:
 
 class MenuStage : public Stage {
 public:
-	Camera menu_cam;
+	
 	EntityMesh person;
 	bool dance;
 	float time_dance;
@@ -32,9 +34,9 @@ public:
 
 class PlayStage : public Stage {
 public:
-	PlayStage(World world);
+	PlayStage(const char* filename);
 	void Render();
-	World world;
+	World* world;
 	void Update(double seconds_elapsed);
 };
 

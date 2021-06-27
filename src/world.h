@@ -10,8 +10,8 @@
 #include "player.h"
 
 extern float mouse_speed;
-constexpr auto mapSize = 20;
-//constexpr auto mapSize = 1;
+
+
 
 class World
 {
@@ -26,18 +26,23 @@ public:
 	bool done;
 	bool alive;
 	float ground_timer;
+	float timer;
+	int currentLaps;
+	int totalLaps;
 	EntityMesh* goal;
-	EntityMesh* map[mapSize];
+	std::vector<EntityMesh*> map;
 	std::vector<Obstacle*> obstacles;
 	EntityMesh* sky;
 	EntityMesh* puntito;
 	Camera* camera; //our global camera
-	World();
+	
+
+	World(const char* filename,Camera* camera);
 	void renderMap();
 	void renderGUI(float x, float y, float w, float h, bool flip, Texture* texture, Vector4 range);
 	void render();
 	void update(double seconds_elapsed);
-	void addObstacle(eObstacleType type);
+	void addObstacleMouse(eObstacleType type);
 	void renderObstacles();
 	bool checkCol(EntityMesh* obstacle, Vector3 playerPos);
 	bool onGround();
@@ -45,11 +50,9 @@ public:
 	void SendFlying();
 	void Restart();
 	void onObstacle(eObstacleType type);
-	//void clear();
-	//void addEntity(Entity* entity);
-
-	//bool load(const char* filename);
-	//Entity* createEntity(std::string type);
+	bool loadMap(const char* filename);
+	void addMap(std::string type,int pos);
+	void addObstacle(std::string type,Vector3 pos,Vector3 normal);
 
 };
 

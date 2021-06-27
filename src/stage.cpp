@@ -4,10 +4,14 @@
 #include "animation.h"
 #include "audio.h"
 
-Stage::Stage() {}
+Stage::Stage() 
+{
+	this->camera = new Camera();
+}
 
 void Stage::NextStage() {
-	int stage = Game::instance->currentStage;
+	Game* game = Game::instance;
+	int stage = game->currentStage;
 	stage++;
 	Audio::Stop();
 	switch (stage)
@@ -15,16 +19,23 @@ void Stage::NextStage() {
 	case INTRO:
 		break;
 	case LEVEL1:
-		//Audio::Play(Songs[SAILOR]);
+		Audio::Play(Songs[SAILOR]);
+		break;
+	case LEVEL2:
+		Audio::Play(Songs[EVA]);
 		break;
 	case END:
 		break;
 	case EXIT:
-		Game::instance->must_exit = true;
+		game->must_exit = true;
 	}
 
-	Game::instance->currentStage = static_cast<eStageID>(stage);
+	game->currentStage = static_cast<eStageID>(stage);
+	//Como usamos diferentes camaras en cada stage hay que ponerla al dia con las dimensiones 
+	game->onResize(game->window_width, game->window_height);
 }
+
+
 
 MenuStage::MenuStage() {
 
@@ -38,7 +49,7 @@ MenuStage::MenuStage() {
 		Audio::Get(Songs[i]);
 	}
 
-
+	
 	Texture* texture = Texture::Get("data/textures/person4.png");
 	Mesh* mesh = Mesh::Get("data/meshes/character.mesh");
 	Shader* shader = Shader::Get("data/shaders/skinning.vs", "data/shaders/texture.fs");
@@ -48,14 +59,15 @@ MenuStage::MenuStage() {
 
 	this->dance = false;
 	this->time_dance = 0.0f;
-	this->menu_cam = Camera();
-	menu_cam.lookAt(Vector3(0.f, 2.0f, 2.0f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
-	menu_cam.setPerspective(70.f, Game::instance->window_width / (float)Game::instance->window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
+	
+	this->camera->lookAt(Vector3(0.f, 2.0f, 2.0f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
+	this->camera->setPerspective(70.f, Game::instance->window_width / (float)Game::instance->window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 }
 
 void MenuStage::Render() 
 {
-	menu_cam.enable();
+	
+	camera->enable();
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 
 	// Clear the window and the depth buffer
@@ -104,23 +116,27 @@ void MenuStage::Update(double seconds_elapsed) {
 	}
 }
 
- PlayStage::PlayStage(World world) {
 
-	 this->world = world;
-}
+ PlayStage::PlayStage(const char* filename) 
+ {
+	 this->world = new World(filename,this->camera);
+ }
 
 void PlayStage::Render() {
 
-	this->world.render();
+	this->world->render();
 }
 
 void PlayStage::Update(double seconds_elapsed) {
 
-	this->world.update(seconds_elapsed);
+	this->world->update(seconds_elapsed);
 	if (Input::wasKeyPressed(SDL_SCANCODE_Z)) NextStage();
 }
 
-EndStage::EndStage() {}
+
+EndStage::EndStage() 
+{
+}
 
 void EndStage::Render()
 {
@@ -139,3 +155,4 @@ void EndStage::Update(double seconds_elapsed) {
 
 	if (Input::wasKeyPressed(SDL_SCANCODE_Z)) NextStage();
 }
+

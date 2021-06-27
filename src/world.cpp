@@ -2,61 +2,44 @@
 #include "game.h"
 #include "input.h"
 #include "fbo.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include "audio.h"
 
 float mouse_speed = 10.0f;
 
 World* World::instance = NULL;
 
-World::World() {
-
+World::World(const char* filename,Camera* w_camera) {
+	timer = 0;
 	instance = this;
 	freecam = false;
 	done = false;
 	alive = true;
 	ground_timer = 0;
-	Texture* texture = Texture::Get("data/textures/export.png");
-	Mesh* mesh = Mesh::Get("data/meshes/tubo.obj");
-
-	Mesh* mesh_up = Mesh::Get("data/meshes/tubo_up.obj");
-	Mesh* mesh_down = Mesh::Get("data/meshes/tubo_down.obj");
-	Mesh* mesh_left = Mesh::Get("data/meshes/tubo_left.obj");
-	Mesh* mesh_right = Mesh::Get("data/meshes/tubo_right.obj");
+	currentLaps = 1;
+	totalLaps = 3;
+	
+	loadMap(filename);
 
 	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 	Vector4 color = Vector4(1, 1, 1, 1);
-	int offset = 40;
-
-	Vector3 padding = mesh->box.halfsize;
-
-	for (int i = 0; i < mapSize; i++)
-	{
-		if (i <= 5) {
-			map[i] = new EntityMesh(mesh_down, texture, shader, color);
-			
-		}
-		if(i>5 & i<= 10){
-			map[i] = new EntityMesh(mesh, texture, shader, color);
-		}
-		if (i > 10 & i <= 15) {
-			map[i] = new EntityMesh(mesh_left, texture, shader, color);
-		}
-		if (i>15) {
-			map[i] = new EntityMesh(mesh_down, texture, shader, color);
-		}
-		map[i]->model.setTranslation(0, 0, i * (-padding.z - offset) - 10);
-	}
-
-
-	texture = Texture::Get("data/textures/meta.png");
-	mesh = Mesh::Get("data/meshes/meta.obj");
+	Texture* texture = Texture::Get("data/textures/meta.png");
+	Mesh* mesh = Mesh::Get("data/meshes/meta.obj");
 	EntityMesh* goal = new EntityMesh(mesh, texture, shader, color);
-	goal->model.setTranslation(0, 0, mapSize * (-padding.z - offset) + 30);
+
+	EntityMesh* lastMap = map[map.size()-1];
+	float position = lastMap->model.getTranslation().z;
+	float offset = -1*lastMap->mesh->box.halfsize.z;
+
+
+	goal->model.setTranslation(0, 0,position + offset);
 	this->goal = goal;
 
 
 	player = Player();
 	Vector3 paddingPlayer = player.entity->mesh->box.halfsize;
-	//player.entity->model.setTranslation(0, paddingPlayer.y/10, 0);
 	player.entity->model.setTranslation(0, -13, 0);
 
 	texture = Texture::Get("data/textures/SkySkybox.png");
@@ -71,9 +54,10 @@ World::World() {
 	puntito = new EntityMesh(mesh, texture, shader, color);
 
 	//create our camera
-	this->camera = new Camera();
+	this->camera = w_camera;
 	camera->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
 	camera->setPerspective(70.f, Game::instance->window_width / (float)Game::instance->window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
+	
 }
 
 void World::render() {
@@ -103,8 +87,6 @@ void World::render() {
 
 	renderMap();
 	renderObstacles();
-	player.entity->model = playerModel;
-	player.Render();
 	goal->render();
 
 
@@ -118,20 +100,39 @@ void World::render() {
 		Vector3 up = playerModel.topVector();
 		camera->lookAt(newEye, center, up);
 	}
+	player.entity->model = playerModel;
+	player.Render();
 
+	int windowHeight = Game::instance->window_height;
+	int windowWidth = Game::instance->window_width;
 
-	drawText(5, Game::instance->window_height - 25, std::to_string(player.speed.z * 100) + " Km/h", Vector3(1, 1, 1), 3);
-	if (done) drawText(Game::instance->window_width / 2 - 300, Game::instance->window_height / 2 - 20, "Has ganado ", Vector3(1, 1, 0), 10);
+	drawText(5, windowHeight - 25, std::to_string((int)player.speed.z * 100) + " Km/h", Vector3(1, 1, 1), 3);
+	drawText(windowWidth - 75, windowHeight - 25, std::to_string(currentLaps) + "/" + std::to_string(totalLaps) , Vector3(1, 1, 1), 3);
 
+	if (done) 
+	{ 
+		std::string min_srt,sec_str;
 
+		drawText(windowWidth / 2 - 300, windowHeight / 2 - 20, "Has ganado ", Vector3(1, 1, 0), 10);
+
+		int minutes = (int)(timer / 60);
+		float seconds = timer - minutes * 60;
+		min_srt = std::to_string(minutes);
+		if (seconds < 10) sec_str = "0";
+		sec_str += std::to_string(seconds);
+
+		drawText(windowWidth / 2 - 300, windowHeight / 2 + 80 , min_srt + ":" + sec_str, Vector3(1, 1, 1), fmod(Game::instance->time , 0.9)+3);
+	}
+
+	 
 	//Draw the floor grid
-	drawGrid();
+	//drawGrid();
 
 	RenderMinimap();
 	//render the FPS, Draw Calls, etc
 	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
 
-	renderGUI(100, 100, 100, 100, false, Texture::Get("data/gui/atlasGUI.png"), Vector4(0.003, 0.118, 0.0995, 0.1015));
+	//renderGUI(100, 100, 100, 100, false, Texture::Get("data/gui/atlasGUI.png"), Vector4(0.003, 0.118, 0.0995, 0.1015));
 	
 	//swap between front buffer and back buffer
 	SDL_GL_SwapWindow(Game::instance->window);
@@ -139,7 +140,7 @@ void World::render() {
 
 void World::renderMap() {
 
-	for (size_t i = 0; i < mapSize; i++)
+	for (size_t i = 0; i < map.size(); i++)
 	{
 		map[i]->render();
 	}
@@ -201,7 +202,7 @@ void World::renderObstacles() {
 
 	for (size_t i = 0; i < obstacles.size(); i++)
 	{
-		obstacles.at(i)->render();
+		obstacles[i]->render();
 	}
 
 }
@@ -217,7 +218,7 @@ bool World::checkCol(EntityMesh* obstacle, Vector3 playerPos)
 
 }
 
-void World::addObstacle(eObstacleType type) {
+void World::addObstacleMouse(eObstacleType type) {
 
 	Vector3 origin = camera->eye;
 	int width = Game::instance->window_width;
@@ -227,12 +228,12 @@ void World::addObstacle(eObstacleType type) {
 
 
 	Vector3 coll, normal, pos;
-	for (size_t i = 0; i < mapSize; i++)
+	for (size_t i = 0; i < map.size(); i++)
 	{
 		if (map[i]->mesh->testRayCollision(map[i]->model, origin, dir,
 			coll, normal)) {
 			
-			pos = coll + Vector3(0.6, 0.6, 0.6) * normal;
+			pos = coll + Vector3(0.7, 0.7, 0.7) * normal;
 		}
 		
 	}
@@ -240,6 +241,7 @@ void World::addObstacle(eObstacleType type) {
 	Mesh* mesh;
 	Texture* texture;
 	Shader* shader;
+	std::string type_str;
 	if (type == BAD) {
 
 		mesh = Mesh::Get("data/meshes/obstacle.obj");
@@ -248,6 +250,7 @@ void World::addObstacle(eObstacleType type) {
 
 		shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 
+		type_str = "bad";
 	}
 	else if (type == GOOD) {
 
@@ -257,13 +260,20 @@ void World::addObstacle(eObstacleType type) {
 
 		shader = Shader::Get("data/shaders/basic.vs", "data/shaders/turbo.fs");
 
+		type_str = "good";
 	}
 
 
 	Vector4 color = Vector4(1, 1, 1, 1);
 
-
+	
+	std::cout << "{" << "\n";
+	std::cout << " \"type\" " << ":"  <<" \""<< type_str  << "\" " << "," << "\n";
+	std::cout << " \"position\" " << ": [" << pos.x << ", " << pos.y << ", " << pos.z <<"] ," << "\n";
+	std::cout << " \"orientation\" " << ": [" << normal.x << ", " << normal.y << ", " << normal.z << "] " << "\n";
+	std::cout << "}," << "\n";
 	Obstacle* obstacle = new Obstacle(mesh, texture, shader, color, type);
+	
 	obstacle->model.setTranslation(pos.x, pos.y, pos.z);
 	obstacle->model.setUpAndOrthonormalize(normal);
 	obstacles.push_back(obstacle);
@@ -274,7 +284,7 @@ void World::update(double seconds_elapsed) {
 
 	bool mouse_locked = Game::instance->mouse_locked;
 	float camSpeed = seconds_elapsed * mouse_speed; //the speed is defined by the seconds_elapsed so it goes constant
-
+	
 	
 	//mouse input to rotate the cam
 	if ((Input::mouse_state & SDL_BUTTON_LEFT) || mouse_locked) //is left button pressed?
@@ -289,7 +299,7 @@ void World::update(double seconds_elapsed) {
 		
 
 	if (!onGround()) {
-
+		
 		ground_timer += seconds_elapsed;
 
 		if (ground_timer > 0.15) {
@@ -299,6 +309,7 @@ void World::update(double seconds_elapsed) {
 	}
 	else {
 		ground_timer = 0;
+		timer += seconds_elapsed;
 	}
 
 	if (done && ground_timer > 0.15) { 
@@ -310,6 +321,7 @@ void World::update(double seconds_elapsed) {
 		SendFlying();
 		return;
 	}
+	
 
 	if (freecam)
 	{
@@ -318,8 +330,8 @@ void World::update(double seconds_elapsed) {
 		if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) camera->move(Vector3(0.0f, 0.0f, -1.0f) * camSpeed);
 		if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) camera->move(Vector3(1.0f, 0.0f, 0.0f) * camSpeed);
 		if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) camera->move(Vector3(-1.0f, 0.0f, 0.0f) * camSpeed);
-		if (Input::wasKeyPressed(SDL_SCANCODE_C)) addObstacle(BAD);
-		if (Input::wasKeyPressed(SDL_SCANCODE_V)) addObstacle(GOOD);
+		if (Input::wasKeyPressed(SDL_SCANCODE_C)) addObstacleMouse(BAD);
+		if (Input::wasKeyPressed(SDL_SCANCODE_V)) addObstacleMouse(GOOD);
 	}
 	else
 	{
@@ -345,6 +357,8 @@ void World::update(double seconds_elapsed) {
 
 	}
 
+	
+
 	for (size_t i = 0; i < obstacles.size(); i++)
 	{
 		if (checkCol(obstacles[i], player.pos)) {
@@ -356,7 +370,15 @@ void World::update(double seconds_elapsed) {
 
 	if (checkCol(goal, player.pos)) {
 		std::cout << "ole muy bien!" << "\n";
-		done = true;
+		if (currentLaps < totalLaps) 
+		{
+			currentLaps++;
+			player.max_speed += 15;
+			player.speed.z += 15;
+			player.turbo_coef += 15;
+			Restart();
+		}
+		else done = true;
 	}
 
 
@@ -371,17 +393,13 @@ void World::onObstacle(eObstacleType type) {
 	switch (type)
 	{
 	case BAD:
-		if (player.speed.z > 20) {
-			player.speed.z = player.speed.z / 2;
-		}
-		else {
-			player.speed.z = 20;
-		}
+		Audio::Play(Songs[COLISION]);
+		player.speed.z = -player.speed.z;
 		break;
 
 	case GOOD:
 		std::cout << "nice" << "\n";
-		player.speed.z = 300;
+		player.speed.z = player.turbo_coef;
 		break;
 
 	default:
@@ -394,7 +412,7 @@ void World::SendFlying() {
 
 	Vector3 top = -1 * player.entity->model.topVector();
 	player.entity->model.translate(top.x, top.y, top.z);
-	player.entity->model.rotate(DEG2RAD / 2, Vector3(1, 1, 1));
+	player.entity->model.rotate(DEG2RAD / 4, Vector3(1, 1, 1));
 
 }
 
@@ -402,8 +420,9 @@ bool World::onGround() {
 
 	Vector3 coll, normal;
 	bool onGround = false;
-	for (size_t i = 0; i < mapSize; i++)
+	for (size_t i = 0; i < map.size(); i++)
 	{
+		
 		if (map[i]->mesh->testRayCollision(map[i]->model, Vector3(0.0, 0.0, player.pos.z), -1 * player.entity->model.topVector(),
 			coll, normal)) {
 
@@ -453,4 +472,119 @@ void World::Restart() {
 	done = false;
 	alive = true;
 	ground_timer = 0;
+}
+
+bool World::loadMap(const char* filename) {
+
+	std::string content;
+
+	std::cout << " + Reading level : " << filename << "..." << std::endl;
+	if (!readFile(filename, content))
+	{
+		std::cout << "- ERROR: file not found: " << filename << std::endl;
+		return false;
+	}
+	//parse json string
+	cJSON* json = cJSON_Parse(content.c_str());
+	if (!json)
+	{
+		std::cout << "ERROR: JSON has errors: " << filename << std::endl;
+		return false;
+	}
+
+	//entities
+	cJSON* obstacles_json = cJSON_GetObjectItemCaseSensitive(json, "obstacles");
+	cJSON* obstacle_json;
+	
+	cJSON_ArrayForEach(obstacle_json, obstacles_json)
+	{
+		std::string type_obs = cJSON_GetObjectItem(obstacle_json, "type")->valuestring;
+		Vector3 pos = readJSONVector3(obstacle_json, "position", Vector3());
+		Vector3 normal = readJSONVector3(obstacle_json, "orientation", Vector3());
+		addObstacle(type_obs, pos, normal);
+	}
+	
+	cJSON* map_json = cJSON_GetObjectItemCaseSensitive(json, "map");
+	cJSON* part_json;
+
+
+	cJSON_ArrayForEach(part_json, map_json)
+	{
+		std::string type_map = cJSON_GetObjectItem(part_json, "type")->valuestring;
+		int pos = readJSONNumber(part_json, "position", 0);
+		addMap(type_map, pos);
+		
+	}
+
+}
+
+void World::addMap(std::string type, int pos)
+{
+	Mesh* mesh = Mesh::Get("data/meshes/tubo.obj");
+
+	Texture* texture = Texture::Get("data/textures/export.png");
+	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+	Vector4 color = Vector4(1, 1, 1, 1);
+
+	if (type == "right") {
+		mesh = Mesh::Get("data/meshes/tubo_right.obj"); 
+	}
+	else if (type == "left") { 
+		mesh = Mesh::Get("data/meshes/tubo_left.obj");
+	}
+	else if (type == "up") { 
+		mesh = Mesh::Get("data/meshes/tubo_up.obj");
+	}
+	else if (type == "down") { 
+		mesh = Mesh::Get("data/meshes/tubo_down.obj");
+	}
+
+	EntityMesh* map_part= new EntityMesh(mesh,texture,shader,color);
+	
+	map.push_back(map_part);
+
+	float offset = -1.98;
+	float transation = offset *map_part->mesh->box.halfsize.z;
+	Vector3 position =  Vector3(0,0,transation*pos);
+	map[map.size()-1]->model.setTranslation(position.x, position.y, position.z);
+	
+	
+}
+
+void World::addObstacle(std::string type,Vector3 pos,Vector3 normal)
+{
+	Mesh* mesh;
+	Texture* texture;
+	Shader* shader;
+	eObstacleType cType;
+	Vector4 color = Vector4(1, 1, 1, 1);
+
+	if (type == "bad") {
+
+		cType = BAD;
+
+		mesh = Mesh::Get("data/meshes/obstacle.obj");
+
+		texture = Texture::Get("data/textures/obstacle.png");
+
+		shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+
+	}
+	else if (type == "good") {
+
+		cType = GOOD;
+
+		mesh = Mesh::Get("data/meshes/good.obj");
+
+		texture = Texture::getWhiteTexture();
+
+		shader = Shader::Get("data/shaders/basic.vs", "data/shaders/turbo.fs");
+
+	}
+	
+	Obstacle* obstacle = new Obstacle(mesh, texture, shader, color, cType);
+	obstacle->model.setTranslation(pos.x, pos.y, pos.z);
+	obstacle->model.setUpAndOrthonormalize(normal);
+	obstacles.push_back(obstacle);
+	
 }

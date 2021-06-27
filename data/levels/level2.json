@@ -1,0 +1,145 @@
+{
+	"obstacles": [
+		{
+			"type": "good",
+			"position": [ 0, -12.7622, -55.2479 ],
+			"orientation": [ 0, 1, 0 ]
+		},
+		{
+			"type": "bad",
+			"position": [ 0, -12.7622, -249.151 ],
+			"orientation": [ 0, 1, 0 ]
+		},
+		{
+			"type": "good",
+			"position": [ -7.18318, -10.0781, -248.334 ],
+			"orientation": [ 0.189808, 0.28796, 0 ]
+		},
+		{
+			"type": "good",
+			"position": [ 6.68781, -10.3773, -248.334 ],
+			"orientation": [ -0.17421, 0.293927, 0 ]
+		},
+		{
+			"type": "bad",
+			"position": [ 6.68781, -10.3773, -344.248 ],
+			"orientation": [ -0.479184, 0.808481, 1.86265e-06 ]
+		},
+		{
+			"type": "bad",
+			"position": [ -7.18318, -11.3773, -344.248 ],
+			"orientation": [ 0.552412, 0.75726, -1.80304e-06 ]
+		},
+		{
+			"type": "bad",
+			"position": [ -6.12747, -11.6846, -485.207 ],
+			"orientation": [ 0.158551, 0.299379, 0 ]
+		},
+		{
+			"type": "bad",
+			"position": [ 0.219583, -13.1963, -485.822 ],
+			"orientation": [ 0, 0.325399, 0 ]
+		},
+		{
+			"type": "bad",
+			"position": [ 5.91969, -11.794, -485.541 ],
+			"orientation": [ -0.142836, 0.304316, 0 ]
+		},
+		{
+			"type": "bad",
+			"position": [ 8.85634, -9.29764, -484.842 ],
+			"orientation": [ -0.618998, 0.699839, 0 ]
+		},
+		{
+			"type": "bad",
+			"position": [ 9.76138, -8.99734, -485.271 ],
+			"orientation": [ -0.25144, 0.259012, 0 ]
+		},
+		{
+			"type": "bad",
+			"position": [ -3.02233, -12.843, -485.092 ],
+			"orientation": [ 0.0795757, 0.318887, 0 ]
+		},
+		{
+			"type": "bad",
+			"position": [ -4.58677, -11.9148, -485.513 ],
+			"orientation": [ 0.316316, 0.888717, 0 ]
+		}
+	],
+
+	"map": [
+		{
+			"type": "down",
+			"position": 0
+		},
+		{
+			"type": "down",
+			"position": 1
+		},
+		{
+			"type": "down",
+			"position": 2
+		},
+		{
+			"type": "down",
+			"position": 3
+		},
+		{
+			"type": "down",
+			"position": 4
+		},
+		{
+			"type": "down",
+			"position": 5
+		},
+		{
+			"type": "right",
+			"position": 5
+		},
+		{
+			"type": "right",
+			"position": 6
+		},
+		{
+			"type": "up",
+			"position": 6
+		},
+		{
+			"type": "up",
+			"position": 7
+		},
+		{
+			"type": "right",
+			"position": 8
+		},
+		{
+			"type": "left",
+			"position": 8
+		},
+		{
+			"type": "down",
+			"position": 8
+		},
+		{
+			"type": "up",
+			"position": 8
+		},
+		{
+			"type": "right",
+			"position": 9
+		},
+		{
+			"type": "left",
+			"position": 9
+		},
+		{
+			"type": "down",
+			"position": 9
+		},
+		{
+			"type": "up",
+			"position": 9
+		}
+
+	]
+}

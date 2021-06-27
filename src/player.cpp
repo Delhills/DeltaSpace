@@ -13,9 +13,9 @@ Player::Player()
 	this->speed = Vector3(0, 0, 0);
 	this->turn_speed_coef = -50;
 	this->speed_coef = 10;
-	this->max_speed = 100;
-	this->min_speed = 20;
-	this->turbo_coef = 200;
+	this->max_speed = 70;
+	this->min_speed = -70;
+	this->turbo_coef = 150;
 
 }
 
@@ -26,7 +26,7 @@ void Player::Render() {
 void Player::accelerate(float dir)
 {
 	float vel = dir * speed_coef;
-	float finalspeed = lerp(this->speed.z, this->speed.z + vel, 0.08);
+	float finalspeed = lerp(this->speed.z, this->speed.z + vel, 0.04);
 	this->speed.z = clamp(finalspeed, min_speed, max_speed);
 }
 

@@ -1,0 +1,143 @@
+{
+	"obstacles": [
+	],
+
+	"map": [
+		{
+			"type": "down",
+			"position": 0
+		},
+		{
+			"type": "down",
+			"position": 1
+		},
+		{
+			"type": "down",
+			"position": 2
+		},
+		{
+			"type": "down",
+			"position": 3
+		},
+		{
+			"type": "down",
+			"position": 4
+		},
+		{
+			"type": "left",
+			"position": 4
+		},
+		{
+			"type": "left",
+			"position": 5
+		},
+		{
+			"type": "left",
+			"position": 6
+		},
+		{
+			"type": "left",
+			"position": 7
+		},
+		{
+			"type": "left",
+			"position": 8
+		},
+		{
+			"type": "up",
+			"position": 8
+		},
+		{
+			"type": "up",
+			"position": 9
+		},
+		{
+			"type": "up",
+			"position": 10
+		},
+		{
+			"type": "up",
+			"position": 11
+		},
+		{
+			"type": "up",
+			"position": 12
+		},
+		{
+			"type": "left",
+			"position": 12
+		},
+		{
+			"type": "left",
+			"position": 13
+		},
+		{
+			"type": "left",
+			"position": 14
+		},
+		{
+			"type": "left",
+			"position": 15
+		},
+		{
+			"type": "up",
+			"position": 15
+		},
+		{
+			"type": "right",
+			"position": 15
+		},
+		{
+			"type": "down",
+			"position": 15
+		},
+		{
+			"type": "up",
+			"position": 16
+		},
+		{
+			"type": "right",
+			"position": 16
+		},
+		{
+			"type": "down",
+			"position": 16
+		},
+		{
+			"type": "left",
+			"position": 17
+		},
+		{
+			"type": "right",
+			"position": 17
+		},
+		{
+			"type": "down",
+			"position": 17
+		},
+		{
+			"type": "up",
+			"position": 17
+		},
+		{
+			"type": "left",
+			"position": 18
+		},
+		{
+			"type": "right",
+			"position": 18
+		},
+		{
+			"type": "down",
+			"position": 18
+		},
+		{
+			"type": "down",
+			"position": 19
+		},
+		{
+			"type": "down",
+			"position": 20
+		}
+	]
+}
