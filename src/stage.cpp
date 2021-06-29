@@ -7,7 +7,7 @@
 Stage::Stage() 
 {
 	this->camera = new Camera();
-	this->gui = GUI();
+	this->gui = NULL;
 }
 
 void Stage::NextStage() {
@@ -60,7 +60,7 @@ MenuStage::MenuStage() {
 
 	this->dance = false;
 	this->time_dance = 0.0f;
-	this->gui = GUI(eTypeGui::MAIN_MENU);
+	this->gui = new GUI(eTypeGui::MAIN_MENU);
 	this->camera->lookAt(Vector3(0.f, 2.0f, 2.0f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
 	this->camera->setPerspective(70.f, Game::instance->window_width / (float)Game::instance->window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 }
@@ -87,10 +87,10 @@ void MenuStage::Render()
 	flair->assignTime(t * flair->duration);
 
 	if (this->dance) {
-		if (this->time_dance < 1)this->time_dance += Game::instance->elapsed_time*2;	
+		if (this->time_dance < 1) this->time_dance += Game::instance->elapsed_time*2;	
 	}
 	else {
-		if (this->time_dance > 0)this->time_dance -= Game::instance->elapsed_time*2;
+		if (this->time_dance > 0) this->time_dance -= Game::instance->elapsed_time*2;
 	}
 
 	//creamos esqueleto intermedio para contener la postura blendeada
@@ -107,7 +107,7 @@ void MenuStage::Render()
 
 	this->person.render_anim(&blended_skeleton);
 
-	gui.RenderGui();
+	gui->RenderGui();
 	//swap between front buffer and back buffer
 	SDL_GL_SwapWindow(Game::instance->window);
 }
@@ -117,10 +117,16 @@ void MenuStage::Update(double seconds_elapsed) {
 	if (Input::wasKeyPressed(SDL_SCANCODE_Z)) NextStage();
 	if (Input::wasKeyPressed(SDL_SCANCODE_1)) {
 		this->dance = !this->dance;
-		Audio::Play(Songs[DANCE]);
+		if (this->dance)
+		{
+			Audio::Play(Songs[DANCE]);
+		}
+		else {
+			Audio::Stop();
+		}
 	}
 
-	eButton button_pressed = gui.checkButtonClicked();
+	eButton button_pressed = gui->checkButtonClicked();
 	//std::cout << button_pressed << "\n";
 	switch (button_pressed)
 	{
@@ -130,17 +136,13 @@ void MenuStage::Update(double seconds_elapsed) {
 	case EXIT_M:
 		Game::instance->must_exit = true;
 		break;
-	case ACCEPT:
-		break;
-	case NO_BUTTON:
-		break;
 	}
 }
 
  PlayStage::PlayStage(const char* filename) 
  {
-	 this->world = new World(filename,this->camera);
-	 this->gui = GUI(eTypeGui::PAUSE_MENU);
+	 this->gui = new GUI(eTypeGui::PAUSE_MENU);
+	 this->world = new World(filename,this->camera, this->gui);
  }
 
 void PlayStage::Render() {
@@ -157,11 +159,11 @@ void PlayStage::Update(double seconds_elapsed) {
 
 EndStage::EndStage() 
 {
+	this->gui = new GUI(eTypeGui::END_MENU);
 }
 
 void EndStage::Render()
 {
-	this->gui = GUI(eTypeGui::END_MENU);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 
 	// Clear the window and the depth buffer

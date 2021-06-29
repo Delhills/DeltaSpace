@@ -14,7 +14,7 @@ class Stage
 {
 public:
 	Camera* camera;
-	GUI gui;
+	GUI* gui;
 	Stage();
 	void NextStage();
 	virtual void Render() {};

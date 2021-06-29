@@ -32,6 +32,7 @@ public:
 	std::vector<eButton> buttons;
 	Texture* atlas;
 	eButton buttonPressed;
+	bool hover;
 
 	GUI() {};
 	GUI(eTypeGui type);

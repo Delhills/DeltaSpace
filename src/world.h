@@ -8,6 +8,7 @@
 #include "camera.h"
 #include "entities.h"
 #include "player.h"
+#include "GUI.h"
 
 extern float mouse_speed;
 
@@ -25,9 +26,11 @@ public:
 	bool freecam;
 	bool done;
 	bool alive;
+	bool pause;
 	float ground_timer;
 	float timer;
 	int currentLaps;
+	float countDown;
 	int totalLaps;
 	EntityMesh* goal;
 	std::vector<EntityMesh*> map;
@@ -35,9 +38,11 @@ public:
 	EntityMesh* sky;
 	EntityMesh* puntito;
 	Camera* camera; //our global camera
+	GUI* gui;
+	eButton buttonPressed;
 	
 
-	World(const char* filename,Camera* camera);
+	World(const char* filename,Camera* camera, GUI* gui);
 	void renderMap();
 	void renderGUI(float x, float y, float w, float h, bool flip, Texture* texture, Vector4 range);
 	void render();

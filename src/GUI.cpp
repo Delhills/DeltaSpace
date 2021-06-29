@@ -7,6 +7,7 @@ GUI::GUI(eTypeGui type)
 	this->type = type;
 	this->atlas = Texture::Get("data/gui/atlasGUI.png");
 	this->buttonPressed = NO_BUTTON;
+	hover = false;
 	switch (type)
 	{
 		case MAIN_MENU:
@@ -17,6 +18,8 @@ GUI::GUI(eTypeGui type)
 		case HUD:
 			break;
 		case PAUSE_MENU:
+			buttons.push_back(REPLAY);
+			buttons.push_back(EXIT_N);
 			break;
 		case END_MENU:
 			break;
@@ -66,7 +69,6 @@ void GUI::RenderGui()
 	float button_x;
 	float button_y;
 	Vector4 range;
-	bool hover;
 
 	for (int i = 0; i < buttons.size(); i++)
 	{
@@ -75,27 +77,28 @@ void GUI::RenderGui()
 		switch (buttons[i])
 		{
 		case REPLAY:
-			button_h = 100;
-			button_w = 100;
-			button_x = 100;
-			button_y = 100;
-			range = Vector4(0.003, 0.118, 0.0995, 0.1015);
-
+			button_h = 80;
+			button_w = 300;
+			button_x = width / 2 - 20;
+			button_y = height / 3;
+			//range = Vector4(0.24, 0.0005, 0.355, 0.218);
 
 			hover = checkHover(button_x, button_y, button_w, button_h);
 
+			/*		quad.createQuad(button_x, button_y, button_w, button_h, false);
 
-			quad.createQuad(button_x, button_y, button_w, button_h, false);
+					shader->setUniform("u_texture_tiling", 1.0f);
+					shader->setUniform("u_model", quadModel);
+					shader->setUniform("u_viewprojection", cameraGUI.viewprojection_matrix);
+					shader->setTexture("u_texture", atlas, 0);
+					shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+					shader->setUniform("u_tex_range", range);
 
-			shader->setUniform("u_texture_tiling", 1.0f);
-			shader->setUniform("u_model", quadModel);
-			shader->setUniform("u_viewprojection", cameraGUI.viewprojection_matrix);
-			shader->setTexture("u_texture", atlas, 0);
-			shader->setUniform("u_color", Vector4(1, 1, 1, 1));
-			shader->setUniform("u_tex_range", hover ? range + Vector4(0.1035, 0, 0, 0) : range);
+					quad.render(GL_TRIANGLES);*/
 
-			quad.render(GL_TRIANGLES);
+			drawText(button_x - button_w / 6, button_y - button_h / 4, "REPLAY", hover ? Vector3(1, 1, 0) : Vector3(1, 1, 1), 4);
 			break;
+
 		case PLAY_M:
 			button_h = 80;
 			button_w = 300;
@@ -164,6 +167,29 @@ void GUI::RenderGui()
 
 			drawText(button_x - button_w / 6, button_y - button_h / 4, "EXIT", hover ? Vector3(1, 1, 0) : Vector3(1, 1, 1), 4);
 			break;
+
+		case EXIT_N:
+			button_h = 80;
+			button_w = 300;
+			button_x = width / 2 - 20;
+			button_y = 2 * height / 3;
+			range = Vector4(0.24, 0.0005, 0.355, 0.218);
+
+			hover = checkHover(button_x, button_y, button_w, button_h);
+
+			//quad.createQuad(button_x, button_y, button_w, button_h, false);
+
+			//shader->setUniform("u_texture_tiling", 1.0f);
+			//shader->setUniform("u_model", quadModel);
+			//shader->setUniform("u_viewprojection", cameraGUI.viewprojection_matrix);
+			//shader->setTexture("u_texture", atlas, 0);
+			//shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+			//shader->setUniform("u_tex_range", range);
+
+			//quad.render(GL_TRIANGLES);
+
+			drawText(button_x - button_w / 6, button_y - button_h / 4, "EXIT", hover ? Vector3(1, 1, 0) : Vector3(1, 1, 1), 4);
+			break;
 		}
 		if (hover && Input::isMousePressed(1)) {
 			buttonPressed = buttons[i];
@@ -182,6 +208,10 @@ void GUI::RenderGui()
 
 eButton GUI::checkButtonClicked()
 {
+
+	if (!Input::isMousePressed(1)) {
+		buttonPressed = eButton::NO_BUTTON;
+	}
 	return buttonPressed;
 }
 

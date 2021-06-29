@@ -11,15 +11,19 @@ float mouse_speed = 10.0f;
 
 World* World::instance = NULL;
 
-World::World(const char* filename,Camera* w_camera) {
+World::World(const char* filename,Camera* w_camera, GUI* gui) {
+	countDown = 3.5;
 	timer = 0;
 	instance = this;
 	freecam = false;
 	done = false;
 	alive = true;
+	pause = false;
 	ground_timer = 0;
 	currentLaps = 1;
 	totalLaps = 3;
+	this->gui = gui;
+	buttonPressed = eButton::NO_BUTTON;
 	
 	loadMap(filename);
 
@@ -62,6 +66,10 @@ World::World(const char* filename,Camera* w_camera) {
 
 void World::render() {
 	//set the clear color (the background color)
+
+	int windowHeight = Game::instance->window_height;
+	int windowWidth = Game::instance->window_width;
+
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 
 	// Clear the window and the depth buffer
@@ -76,8 +84,6 @@ void World::render() {
 
 	camera->enable();
 
-	Matrix44 playerModel = player.entity->model;
-
 	glDisable(GL_DEPTH_TEST);
 	Matrix44 skyModel;
 	skyModel.translate(camera->eye.x, camera->eye.y, camera->eye.z);
@@ -85,52 +91,59 @@ void World::render() {
 	glEnable(GL_DEPTH_TEST);
 
 
-	renderMap();
-	renderObstacles();
-	goal->render();
 
-
-	if (!freecam) {
-
-		Vector3 newEye = playerModel * Vector3(0.0f, 7.0f, 10.0f);
-		newEye.x = lerp(camera->eye.x, newEye.x, 2*Game::instance->elapsed_time);
-		newEye.y = lerp(camera->eye.y, newEye.y, 2*Game::instance->elapsed_time);
-
-		Vector3 center = playerModel * Vector3(0.0f, 0.0f, -5.0f);
-		Vector3 up = playerModel.topVector();
-		camera->lookAt(newEye, center, up);
+	if (this->pause) {
+		gui->RenderGui();
 	}
-	player.entity->model = playerModel;
-	player.Render();
+	else {
 
-	int windowHeight = Game::instance->window_height;
-	int windowWidth = Game::instance->window_width;
+		renderObstacles();
+		goal->render();
+		Matrix44 playerModel = player.entity->model;
+		renderMap();
+		if (!freecam) {
 
-	drawText(5, windowHeight - 25, std::to_string((int)player.speed.z * 100) + " Km/h", Vector3(1, 1, 1), 3);
-	drawText(windowWidth - 75, windowHeight - 25, std::to_string(currentLaps) + "/" + std::to_string(totalLaps) , Vector3(1, 1, 1), 3);
+			Vector3 newEye = playerModel * Vector3(0.0f, 7.0f, 10.0f);
+			newEye.x = lerp(camera->eye.x, newEye.x, 2 * Game::instance->elapsed_time);
+			newEye.y = lerp(camera->eye.y, newEye.y, 2 * Game::instance->elapsed_time);
 
-	if (done) 
-	{ 
-		std::string min_srt,sec_str;
+			Vector3 center = playerModel * Vector3(0.0f, 0.0f, -5.0f);
+			Vector3 up = playerModel.topVector();
+			camera->lookAt(newEye, center, up);
+		}
+		player.entity->model = playerModel;
+		player.Render();
 
-		drawText(windowWidth / 2 - 300, windowHeight / 2 - 20, "Has ganado ", Vector3(1, 1, 0), 10);
+		drawText(5, windowHeight - 25, std::to_string((int)player.speed.z * 100) + " Km/h", Vector3(1, 1, 1), 3);
+		drawText(windowWidth - 75, windowHeight - 25, std::to_string(currentLaps) + "/" + std::to_string(totalLaps) , Vector3(1, 1, 1), 3);
+		if (done) 
+		{ 
+			std::string min_srt,sec_str;
 
-		int minutes = (int)(timer / 60);
-		float seconds = timer - minutes * 60;
-		min_srt = std::to_string(minutes);
-		if (seconds < 10) sec_str = "0";
-		sec_str += std::to_string(seconds);
+			drawText(windowWidth / 2 - 300, windowHeight / 2 - 20, "Has ganado ", Vector3(1, 1, 0), 10);
 
-		drawText(windowWidth / 2 - 300, windowHeight / 2 + 80 , min_srt + ":" + sec_str, Vector3(1, 1, 1), fmod(Game::instance->time , 0.9)+3);
-	}
+			int minutes = (int)(timer / 60);
+			float seconds = timer - minutes * 60;
+			min_srt = std::to_string(minutes);
+			if (seconds < 10) sec_str = "0";
+			sec_str += std::to_string(seconds);
+
+			drawText(windowWidth / 2 - 300, windowHeight / 2 + 80 , min_srt + ":" + sec_str, Vector3(1, 1, 1), 0.5*sin(Game::instance->time * PI)+3);
+		}
 
 	 
-	//Draw the floor grid
-	//drawGrid();
+		//Draw the floor grid
+		//drawGrid();
 
-	RenderMinimap();
-	//render the FPS, Draw Calls, etc
-	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
+		RenderMinimap();
+	}
+
+
+
+	if (countDown > 0.0)
+	{
+		drawText(windowWidth / 2 - 15, windowHeight / 2 - 15, std::to_string((int)this->countDown), Vector3(1, 1, 1), 10);
+	}
 
 	//renderGUI(100, 100, 100, 100, false, Texture::Get("data/gui/atlasGUI.png"), Vector4(0.003, 0.118, 0.0995, 0.1015));
 	
@@ -148,6 +161,7 @@ void World::renderMap() {
 }
 
 void World::renderGUI(float x, float y, float w, float h, bool flip, Texture* texture, Vector4 range) {
+
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
@@ -155,6 +169,7 @@ void World::renderGUI(float x, float y, float w, float h, bool flip, Texture* te
 
 	int width = Game::instance->window_width;
 	int height = Game::instance->window_height;
+
 	Camera cameraGUI;
 	cameraGUI.setOrthographic(0, width, height, 0, -1, 1);
 	cameraGUI.enable();
@@ -281,11 +296,42 @@ void World::addObstacleMouse(eObstacleType type) {
 }
 
 void World::update(double seconds_elapsed) {
+	
+	if (this->countDown >= 0.0)
+	{	
+		this->countDown = this->countDown - 1 * seconds_elapsed;
+		return;
+	}
 
 	bool mouse_locked = Game::instance->mouse_locked;
 	float camSpeed = seconds_elapsed * mouse_speed; //the speed is defined by the seconds_elapsed so it goes constant
 	
-	
+	if (Input::wasKeyPressed(SDL_SCANCODE_1)) freecam = !freecam; //move faster with left shift
+	if (Input::wasKeyPressed(SDL_SCANCODE_0)) Restart();
+	if (Input::wasKeyPressed(SDL_SCANCODE_ESCAPE)) {
+		if (this->pause) Audio::UnPause;
+		else Audio::Pause;
+		this->pause = !this->pause;
+	}
+	if (Input::wasKeyPressed(SDL_SCANCODE_3)) this->done = !this->done;
+	//std::cout << this->pause << "\n";
+	std::cout << buttonPressed << "\n";
+
+	buttonPressed = gui->checkButtonClicked();
+	if (this->pause) {
+		switch (buttonPressed)
+		{
+		case REPLAY:
+			Restart();
+			break;
+		case EXIT_N:
+			Game::instance->must_exit = true;
+			break;
+		}
+		return;
+	}
+
+
 	//mouse input to rotate the cam
 	if ((Input::mouse_state & SDL_BUTTON_LEFT) || mouse_locked) //is left button pressed?
 	{
@@ -293,9 +339,6 @@ void World::update(double seconds_elapsed) {
 		camera->rotate(Input::mouse_delta.y * 0.005f, camera->getLocalVector(Vector3(-1.0f, 0.0f, 0.0f)));
 	}
 
-	//async input to move the camera around
-	if (Input::wasKeyPressed(SDL_SCANCODE_1)) freecam = !freecam; //move faster with left shift
-	if (Input::wasKeyPressed(SDL_SCANCODE_0)) Restart();
 		
 
 	if (!onGround()) {
@@ -376,7 +419,9 @@ void World::update(double seconds_elapsed) {
 			player.max_speed += 15;
 			player.speed.z += 15;
 			player.turbo_coef += 15;
-			Restart();
+			player.entity->model.setTranslation(0, -13, 0);
+			done = false;
+			alive = true;
 		}
 		else done = true;
 	}
@@ -474,7 +519,10 @@ void World::Restart() {
 	player.entity->model.setTranslation(0, -13, 0);
 	done = false;
 	alive = true;
-	ground_timer = 0;
+	pause = false;
+	ground_timer = 0.0;
+	timer = 0.0;
+	currentLaps = 1;
 }
 
 bool World::loadMap(const char* filename) {
