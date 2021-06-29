@@ -25,6 +25,9 @@ void Stage::NextStage() {
 	case LEVEL2:
 		Audio::Play(Songs[EVA]);
 		break;
+	case LEVEL3:
+		Audio::Play(Songs[UNDER]);
+		break;
 	case END:
 		break;
 	case EXIT:

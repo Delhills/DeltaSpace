@@ -546,7 +546,7 @@ bool World::loadMap(const char* filename) {
 	//entities
 	cJSON* obstacles_json = cJSON_GetObjectItemCaseSensitive(json, "obstacles");
 	cJSON* obstacle_json;
-	
+
 	cJSON_ArrayForEach(obstacle_json, obstacles_json)
 	{
 		std::string type_obs = cJSON_GetObjectItem(obstacle_json, "type")->valuestring;
@@ -554,52 +554,56 @@ bool World::loadMap(const char* filename) {
 		Vector3 normal = readJSONVector3(obstacle_json, "orientation", Vector3());
 		addObstacle(type_obs, pos, normal);
 	}
-	
+
 	cJSON* map_json = cJSON_GetObjectItemCaseSensitive(json, "map");
 	cJSON* part_json;
 
-
+	int map_counter = 0;
 	cJSON_ArrayForEach(part_json, map_json)
 	{
-		std::string type_map = cJSON_GetObjectItem(part_json, "type")->valuestring;
-		int pos = readJSONNumber(part_json, "position", 0);
-		addMap(type_map, pos);
-		
+		Vector4 type = readJSONVector4(part_json, "type");
+		addMap(type, map_counter);
+		map_counter++;
 	}
 
 }
 
-void World::addMap(std::string type, int pos)
+void World::addMap(Vector4 type, int pos)
 {
-	Mesh* mesh = Mesh::Get("data/meshes/tubo.obj");
+	Mesh* mesh;
+	if (type.x == 1) {
+		mesh = Mesh::Get("data/meshes/tubo_down.obj");
+		addPart(mesh, pos);
+	}
+	if (type.y == 1) {
+		mesh = Mesh::Get("data/meshes/tubo_right.obj");
+		addPart(mesh, pos);
+	}
+	if (type.z == 1) {
+		mesh = Mesh::Get("data/meshes/tubo_up.obj");
+		addPart(mesh, pos);
+	}
+	if (type.w == 1) {
+		mesh = Mesh::Get("data/meshes/tubo_left.obj");
+		addPart(mesh, pos);
+	}
+}
+
+void World::addPart(Mesh* mesh, int pos) {
 
 	Texture* texture = Texture::Get("data/textures/export.png");
 	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 	Vector4 color = Vector4(1, 1, 1, 1);
+	EntityMesh* map_part = new EntityMesh(mesh, texture, shader, color);
 
-	if (type == "right") {
-		mesh = Mesh::Get("data/meshes/tubo_right.obj"); 
-	}
-	else if (type == "left") { 
-		mesh = Mesh::Get("data/meshes/tubo_left.obj");
-	}
-	else if (type == "up") { 
-		mesh = Mesh::Get("data/meshes/tubo_up.obj");
-	}
-	else if (type == "down") { 
-		mesh = Mesh::Get("data/meshes/tubo_down.obj");
-	}
-
-	EntityMesh* map_part= new EntityMesh(mesh,texture,shader,color);
-	
 	map.push_back(map_part);
 
-	float offset = -1.98;
-	float transation = offset *map_part->mesh->box.halfsize.z;
-	Vector3 position =  Vector3(0,0,transation*pos);
-	map[map.size()-1]->model.setTranslation(position.x, position.y, position.z);
-	
-	
+	float offset = -2;
+	float transation = offset * map_part->mesh->box.halfsize.z;
+
+	Vector3 position = Vector3(0, 0, transation * pos);
+	map[map.size() - 1]->model.setTranslation(position.x, position.y, position.z);
+
 }
 
 void World::addObstacle(std::string type,Vector3 pos,Vector3 normal)

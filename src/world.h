@@ -56,7 +56,8 @@ public:
 	void Restart();
 	void onObstacle(eObstacleType type);
 	bool loadMap(const char* filename);
-	void addMap(std::string type,int pos);
+	void addMap(Vector4 type, int pos);
+	void addPart(Mesh* mesh, int pos);
 	void addObstacle(std::string type,Vector3 pos,Vector3 normal);
 
 };
