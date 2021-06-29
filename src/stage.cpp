@@ -156,7 +156,10 @@ void PlayStage::Render() {
 void PlayStage::Update(double seconds_elapsed) {
 
 	this->world->update(seconds_elapsed);
-	if (Input::wasKeyPressed(SDL_SCANCODE_Z)) NextStage();
+	if (this->world->nextLevel) {
+		this->world->nextLevel = false;
+		NextStage();
+	}
 }
 
 

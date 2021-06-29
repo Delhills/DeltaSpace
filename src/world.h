@@ -27,6 +27,7 @@ public:
 	bool done;
 	bool alive;
 	bool pause;
+	bool nextLevel;
 	float ground_timer;
 	float timer;
 	int currentLaps;

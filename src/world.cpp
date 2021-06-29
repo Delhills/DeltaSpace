@@ -19,6 +19,7 @@ World::World(const char* filename,Camera* w_camera, GUI* gui) {
 	done = false;
 	alive = true;
 	pause = false;
+	nextLevel = false;
 	ground_timer = 0;
 	currentLaps = 1;
 	totalLaps = 3;
@@ -100,7 +101,9 @@ void World::render() {
 		renderObstacles();
 		goal->render();
 		Matrix44 playerModel = player.entity->model;
-		renderMap();
+		if (ground_timer < 1.0) {
+			renderMap();
+		}
 		if (!freecam) {
 
 			Vector3 newEye = playerModel * Vector3(0.0f, 7.0f, 10.0f);
@@ -114,7 +117,7 @@ void World::render() {
 		player.entity->model = playerModel;
 		player.Render();
 
-		drawText(5, windowHeight - 25, std::to_string((int)player.speed.z * 100) + " Km/h", Vector3(1, 1, 1), 3);
+		drawText(5, windowHeight - 25, std::to_string((int)floor(player.speed.z * 100)) + " Km/h", Vector3(1, 1, 1), 3);
 		drawText(windowWidth - 75, windowHeight - 25, std::to_string(currentLaps) + "/" + std::to_string(totalLaps) , Vector3(1, 1, 1), 3);
 		if (done) 
 		{ 
@@ -129,6 +132,10 @@ void World::render() {
 			sec_str += std::to_string(seconds);
 
 			drawText(windowWidth / 2 - 300, windowHeight / 2 + 80 , min_srt + ":" + sec_str, Vector3(1, 1, 1), 0.5*sin(Game::instance->time * PI)+3);
+			gui->RenderGui();
+		}
+		else if (!alive) {
+			gui->RenderGui();
 		}
 
 	 
@@ -315,20 +322,25 @@ void World::update(double seconds_elapsed) {
 	}
 	if (Input::wasKeyPressed(SDL_SCANCODE_3)) this->done = !this->done;
 	//std::cout << this->pause << "\n";
-	std::cout << buttonPressed << "\n";
 
 	buttonPressed = gui->checkButtonClicked();
-	if (this->pause) {
+	if (this->pause || !alive) {
 		switch (buttonPressed)
 		{
 		case REPLAY:
 			Restart();
 			break;
+		case NEXT:
+			this->nextLevel = true;
+			break;
 		case EXIT_N:
 			Game::instance->must_exit = true;
 			break;
 		}
-		return;
+		if (this->pause)
+		{
+			return;
+		}
 	}
 
 
@@ -365,7 +377,7 @@ void World::update(double seconds_elapsed) {
 		return;
 	}
 	
-
+	player.max_speed += seconds_elapsed;
 	if (freecam)
 	{
 		if (Input::isKeyPressed(SDL_SCANCODE_LSHIFT)) camSpeed *= 10; //move faster with left shift
@@ -379,13 +391,16 @@ void World::update(double seconds_elapsed) {
 	else
 	{
 		if (player.speed.z > player.max_speed) { 
-			//Si tienes tubo no puedes acelerar ni frenar
+			//Si tienes turbo no puedes acelerar ni frenar
 			player.speed.z -= seconds_elapsed * 100;
 		}
 		else
 		{
-			if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) player.accelerate(1.0);
-			else if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) player.accelerate(-1.0);
+			if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) player.accelerate(60*seconds_elapsed);
+			else if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) player.accelerate(-45.0 * seconds_elapsed);
+			else {
+				player.accelerate(-lerp(player.speed.z, 0.0, 0.7)*seconds_elapsed);
+			}
 		}
 
 
@@ -410,13 +425,13 @@ void World::update(double seconds_elapsed) {
 
 		}
 	}
-
+	std::cout << "hola" << "\n";
 	if (checkCol(goal, player.pos)) {
 		std::cout << "ole muy bien!" << "\n";
 		if (currentLaps < totalLaps) 
 		{
 			currentLaps++;
-			player.max_speed += 15;
+			player.min_speed += 15;
 			player.speed.z += 15;
 			player.turbo_coef += 15;
 			player.entity->model.setTranslation(0, -13, 0);
@@ -516,13 +531,18 @@ void World::RenderMinimap() {
 }
 
 void World::Restart() {
+	camera->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
 	player.entity->model.setTranslation(0, -13, 0);
+	player.speed = Vector3(0, 0, 0);
+	player.max_speed = 70;
+	player.min_speed = -70;
 	done = false;
 	alive = true;
 	pause = false;
 	ground_timer = 0.0;
 	timer = 0.0;
 	currentLaps = 1;
+	countDown = 3.5;
 }
 
 bool World::loadMap(const char* filename) {

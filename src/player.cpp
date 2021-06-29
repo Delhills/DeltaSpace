@@ -11,10 +11,10 @@ Player::Player()
 	pos = Vector3(0, 0, 0);
 	
 	this->speed = Vector3(0, 0, 0);
-	this->turn_speed_coef = -50;
-	this->speed_coef = 10;
 	this->max_speed = 70;
 	this->min_speed = -70;
+	this->turn_speed_coef = -50;
+	this->speed_coef = 10;
 	this->turbo_coef = 150;
 
 }
