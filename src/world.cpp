@@ -11,8 +11,9 @@ float mouse_speed = 10.0f;
 
 World* World::instance = NULL;
 
-World::World(const char* filename,Camera* w_camera, GUI* gui, const char* textureFile) {
-	countDown = 3.5;
+World::World(const char* filename,Camera* w_camera, GUI* gui, const char* textureFile) 
+{
+	countDown = 2.99;
 	timer = 0;
 	instance = this;
 	freecam = false;
@@ -34,7 +35,7 @@ World::World(const char* filename,Camera* w_camera, GUI* gui, const char* textur
 	Vector4 color = Vector4(1, 1, 1, 1);
 	Texture* texture = Texture::getWhiteTexture();
 	Mesh* mesh = Mesh::Get("data/meshes/goal.obj");
-	EntityMesh* goal = new EntityMesh(mesh, texture, shader, color);
+	Goal* goal = new Goal(mesh, texture, shader, color);
 
 	EntityMesh* lastMap = map[map.size()-1];
 	float position = lastMap->model.getTranslation().z;
@@ -69,7 +70,8 @@ World::World(const char* filename,Camera* w_camera, GUI* gui, const char* textur
 	
 }
 
-void World::render() {
+void World::render() 
+{
 	//set the clear color (the background color)
 
 	int windowHeight = Game::instance->window_height;
@@ -105,7 +107,7 @@ void World::render() {
 	else {
 
 		renderObstacles();
-		renderGoal();
+		goal->render(currentLaps);
 		Matrix44 playerModel = player.entity->model;
 		if (ground_timer < 1.0) {
 			renderMap();
@@ -156,7 +158,7 @@ void World::render() {
 
 	if (countDown > 0.0)
 	{
-		drawText(windowWidth / 2 - 15, windowHeight / 2 - 15, std::to_string((int)this->countDown), Vector3(1, 1, 1), 10);
+		drawText(windowWidth / 2 - 15, windowHeight / 2 - 15, std::to_string(((int)this->countDown)+1), Vector3(1, 1, 1), 10);
 	}
 
 	//renderGUI(100, 100, 100, 100, false, Texture::Get("data/gui/atlasGUI.png"), Vector4(0.003, 0.118, 0.0995, 0.1015));
@@ -165,7 +167,8 @@ void World::render() {
 	SDL_GL_SwapWindow(Game::instance->window);
 }
 
-void World::renderMap() {
+void World::renderMap() 
+{
 
 	for (size_t i = 0; i < map.size(); i++)
 	{
@@ -174,25 +177,8 @@ void World::renderMap() {
 
 }
 
-void World::renderGoal() {
-
-		Matrix44 model = goal->model;
-		Shader* shader = goal->shader;
-		Mesh* mesh = goal->mesh;
-		//enable shader and pass uniforms
-		shader->enable();
-		shader->setUniform("u_model", model);
-		shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-
-		shader->setUniform("u_lap", currentLaps);
-
-		mesh->render(GL_TRIANGLES);
-
-		//disable the shader after finishing rendering
-		shader->disable();
-}
-
-void World::renderObstacles() {
+void World::renderObstacles() 
+{
 
 	for (size_t i = 0; i < obstacles.size(); i++)
 	{
@@ -212,7 +198,8 @@ bool World::checkCol(EntityMesh* obstacle, Vector3 playerPos)
 
 }
 
-void World::addObstacleMouse(eObstacleType type) {
+void World::addObstacleMouse(eObstacleType type) 
+{
 
 	Vector3 origin = camera->eye;
 	int width = Game::instance->window_width;
@@ -274,7 +261,8 @@ void World::addObstacleMouse(eObstacleType type) {
 
 }
 
-void World::update(double seconds_elapsed) {
+void World::update(double seconds_elapsed) 
+{
 
 	if (this->countDown >= 0.0)
 	{	
@@ -289,8 +277,7 @@ void World::update(double seconds_elapsed) {
 	bool mouse_locked = Game::instance->mouse_locked;
 	float camSpeed = seconds_elapsed * mouse_speed; //the speed is defined by the seconds_elapsed so it goes constant
 	
-	if (Input::wasKeyPressed(SDL_SCANCODE_1)) freecam = !freecam; //move faster with left shift
-	if (Input::wasKeyPressed(SDL_SCANCODE_0)) Restart();
+
 	if (Input::wasKeyPressed(SDL_SCANCODE_ESCAPE)) {
 		if (this->pause) Audio::UnPause;
 		else Audio::Pause;
@@ -298,11 +285,10 @@ void World::update(double seconds_elapsed) {
 	}
 	if (Input::wasKeyPressed(SDL_SCANCODE_3)) this->done = !this->done;
 	
-	//std::cout << buttonPressed << "\n";
+
 
 	if (Input::wasMousePressed(1))
 	{
-		std::cout << "holi" << "\n";
 		buttonPressed = gui->buttonPressed;
 	}
 	if (this->pause || !alive || done) {
@@ -437,7 +423,8 @@ void World::update(double seconds_elapsed) {
 
 }
 
-void World::onObstacle(eObstacleType type) {
+void World::onObstacle(eObstacleType type) 
+{
 
 	switch (type)
 	{
@@ -447,7 +434,7 @@ void World::onObstacle(eObstacleType type) {
 		break;
 
 	case GOOD:
-		std::cout << "nice" << "\n";
+		Audio::Play(Songs[BOOST]);
 		player.speed.z = player.turbo_coef;
 		break;
 
@@ -457,7 +444,8 @@ void World::onObstacle(eObstacleType type) {
 
 }
 
-void World::SendFlying() {
+void World::SendFlying() 
+{
 
 	Vector3 top = -1 * player.entity->model.topVector();
 	player.entity->model.translate(top.x, top.y, top.z);
@@ -470,7 +458,8 @@ bool World::hasWon()
 	return alive && player.pos.z < goal->model.getTranslation().z;
 }
 
-bool World::onGround() {
+bool World::onGround() 
+{
 
 	Vector3 coll, normal;
 	bool onGround = false;
@@ -489,7 +478,8 @@ bool World::onGround() {
 
 }
 
-void World::RenderMinimap() {
+void World::RenderMinimap() 
+{
 
 	glViewport(Game::instance->window_width - 200, Game::instance->window_height - 200, 200, 200);
 	Camera mapCam;
@@ -524,7 +514,8 @@ void World::RenderMinimap() {
 	glViewport(0, 0, Game::instance->window_width, Game::instance->window_height);
 }
 
-void World::Restart() {
+void World::Restart() 
+{
 	camera->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
 	player.entity->model.setTranslation(0, -13, 0);
 	player.speed = Vector3(0, 0, 0);
@@ -537,10 +528,11 @@ void World::Restart() {
 	ground_timer = 0.0;
 	timer = 0.0;
 	currentLaps = 1;
-	countDown = 3.5;
+	countDown = 2.99;
 }
 
-bool World::loadMap(const char* filename) {
+bool World::loadMap(const char* filename) 
+{
 
 	std::string content;
 
@@ -604,7 +596,8 @@ void World::addMap(Vector4 type, int pos)
 	}
 }
 
-void World::addPart(Mesh* mesh, int pos) {
+void World::addPart(Mesh* mesh, int pos) 
+{
 
 	Texture* texture = Texture::Get(textureFile);
 	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");

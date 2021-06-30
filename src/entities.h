@@ -69,4 +69,19 @@ public:
 	
 };
 
+
+class Goal : public Entity {
+public:
+	Mesh* mesh;
+	Texture* texture;
+	Shader* shader;
+	Vector4 color;
+
+	Goal();
+	Goal(Mesh* mesh, Texture* texture, Shader* shader, Vector4 color);
+	void render(int currentLaps);
+
+};
+	
+
 #endif

@@ -10,10 +10,12 @@ Stage::Stage()
 	this->gui = NULL;
 }
 
-void Stage::goToMenuStage() {
+void Stage::goToMenuStage() 
+{
 	Audio::Stop();
 	Game::instance->currentStage = eStageID::INTRO;
 }
+
 void Stage::NextStage() {
 	Game* game = Game::instance;
 	int stage = game->currentStage;
@@ -22,8 +24,9 @@ void Stage::NextStage() {
 	PlayStage* a;
 	switch (stage)
 	{
-	case INTRO:
+	case TUTORIAL:
 		break;
+
 	case LEVEL1:
 		a = (PlayStage*)game->stages[LEVEL1];
 		a->world->Restart();
@@ -49,9 +52,8 @@ void Stage::NextStage() {
 	game->onResize(game->window_width, game->window_height);
 }
 
-
-
-MenuStage::MenuStage() {
+MenuStage::MenuStage()
+{
 
 	if (BASS_Init(-1, 44100, 0, 0, NULL) == false) //-1 significa usar el por defecto del sistema operativo
 	{
@@ -71,6 +73,12 @@ MenuStage::MenuStage() {
 	this->person = EntityMesh(mesh, texture, shader, color);
 	person.model.setTranslation(0.0f, 0.0f, 0.0f);
 
+	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+	texture = Texture::Get("data/textures/skybox.PNG");
+	mesh = Mesh::Get("data/meshes/esfera.obj");
+	this->sky = new EntityMesh(mesh, texture, shader, color);
+	camera_move = 0;
+
 	this->dance = false;
 	this->time_dance = 0.0f;
 	this->gui = new GUI(eTypeGui::MAIN_MENU);
@@ -84,13 +92,22 @@ void MenuStage::Render()
 	camera->enable();
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 
+
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//set flags
 	glDisable(GL_BLEND);
 	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
 
+
+	glDisable(GL_DEPTH_TEST);
+	Matrix44 skymodel;
+	skymodel.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
+	sky->render(skymodel);
+	glEnable(GL_DEPTH_TEST);
+	
+	camera->rotate(DEG2RAD * camera_move, Vector3(0, 0, 1));
+	
 	Animation* fall = Animation::Get("data/anims/animations_falling.skanim");
 	Animation* flair = Animation::Get("data/anims/animations_flair.skanim");
 
@@ -113,7 +130,7 @@ void MenuStage::Render()
 	float time = Game::instance->time;
 	float i = 0.3 * sin(time * PI) - 0.3;
 	//std::cout << i << "\n";
-	person.model.setTranslation(0.6f, i, 0.0f);
+	person.model.setTranslation(camera->center.x+0.6, camera->center.y+ i, camera->center.z);
 
 	//y blendeamos entre animA y animB con peso 0.5 y lo guardamos en blended_skeleton
 	blendSkeleton(&fall->skeleton, &flair->skeleton, this->time_dance, &blended_skeleton);
@@ -125,10 +142,9 @@ void MenuStage::Render()
 	SDL_GL_SwapWindow(Game::instance->window);
 }
 
-void MenuStage::Update(double seconds_elapsed) {
+void MenuStage::Update(double seconds_elapsed)
+{
 
-	if (Input::wasKeyPressed(SDL_SCANCODE_Z)) NextStage();
-	//buttonPressed = gui->checkButtonClicked();
 
 	if (Input::wasMousePressed(1))
 	{
@@ -136,7 +152,7 @@ void MenuStage::Update(double seconds_elapsed) {
 		buttonPressed = gui->buttonPressed;
 	}
 
-//	std::cout << buttonPressed << "\n";
+	camera_move = seconds_elapsed*10;
 
 	switch (buttonPressed)
 	{
@@ -164,18 +180,63 @@ void MenuStage::Update(double seconds_elapsed) {
 	buttonPressed = NO_BUTTON;
 }
 
- PlayStage::PlayStage(const char* filename, const char* textureFile)
+TutorialStage::TutorialStage() 
+{
+	camera_move = 0;
+	this->gui = new GUI(eTypeGui::END_MENU);
+	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+	Texture* texture = Texture::Get("data/textures/skybox.PNG");
+	Mesh* mesh = Mesh::Get("data/meshes/esfera.obj");
+	Vector4 color = Vector4(1, 1, 1, 1);
+	this->sky = new EntityMesh(mesh, texture, shader, color);
+	this->camera->lookAt(Vector3(0.f, 2.0f, 2.0f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
+	this->camera->setPerspective(70.f, Game::instance->window_width / (float)Game::instance->window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
+}
+
+void TutorialStage::Render() 
+{
+	camera->enable();
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+
+
+	// Clear the window and the depth buffer
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//set flags
+	glDisable(GL_BLEND);
+	glDisable(GL_CULL_FACE);
+
+
+	glDisable(GL_DEPTH_TEST);
+	Matrix44 skymodel;
+	skymodel.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
+	sky->render(skymodel);
+	glEnable(GL_DEPTH_TEST);
+
+	camera->rotate(DEG2RAD * camera_move, Vector3(0, 0, 1));
+
+	SDL_GL_SwapWindow(Game::instance->window);
+}
+
+void TutorialStage::Update(double seconds_elapsed) 
+{
+	camera_move = seconds_elapsed * 10;
+	if (Input::wasKeyPressed(SDL_SCANCODE_Z)) NextStage();
+
+}
+
+PlayStage::PlayStage(const char* filename, const char* textureFile)
  {
 	 this->gui = new GUI(eTypeGui::PAUSE_MENU);
 	 this->world = new World(filename,this->camera, this->gui, textureFile);
  }
 
-void PlayStage::Render() {
-
+void PlayStage::Render() 
+{
 	this->world->render();
 }
 
-void PlayStage::Update(double seconds_elapsed) {
+void PlayStage::Update(double seconds_elapsed) 
+{
 
 	this->world->update(seconds_elapsed);
 	if (this->world->nextLevel) {
@@ -190,21 +251,44 @@ void PlayStage::Update(double seconds_elapsed) {
 	//std::cout << this->world->goToMenu << "\n";
 }
 
-
 EndStage::EndStage() 
 {
 	this->gui = new GUI(eTypeGui::END_MENU);
+	camera_move = 0;
+	
+	Shader* shader= Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+	Texture* texture= Texture::Get("data/textures/skybox.PNG");
+	Mesh* mesh= Mesh::Get("data/meshes/esfera.obj");
+	Vector4 color = Vector4(1, 1, 1, 1);
+	this->sky = new EntityMesh(mesh, texture, shader, color);
+	this->camera->lookAt(Vector3(0.f, 2.0f, 2.0f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
+	this->camera->setPerspective(70.f, Game::instance->window_width / (float)Game::instance->window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 }
 
 void EndStage::Render()
 {
+	camera->enable();
 	glClearColor(0.0, 0.0, 0.0, 1.0);
+
 
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//set flags
+	glDisable(GL_BLEND);
+	glDisable(GL_CULL_FACE);
+
+
+	glDisable(GL_DEPTH_TEST);
+	Matrix44 skymodel;
+	skymodel.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
+	sky->render(skymodel);
+	glEnable(GL_DEPTH_TEST);
+
+	camera->rotate(DEG2RAD * camera_move, Vector3(0, 0, 1));
 
 	int h = Game::instance->window_height;
 	int w = Game::instance->window_width;
+
 
 	drawText(w / 2 - 300, h / 4 - 20, "Developers:", Vector3(1, 1, 0), 5);
 	drawText(w / 2 - 300, 2*h / 5 - 50, "Daniel Salvado", Vector3(1, 1, 0), 5);
@@ -217,8 +301,9 @@ void EndStage::Render()
 	SDL_GL_SwapWindow(Game::instance->window);
 }
 
-void EndStage::Update(double seconds_elapsed) {
-
+void EndStage::Update(double seconds_elapsed)
+{
+	camera_move = seconds_elapsed * 10;
 	if (Input::wasKeyPressed(SDL_SCANCODE_Z)) Game::instance->must_exit = true;
 }
 

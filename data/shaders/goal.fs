@@ -1,6 +1,6 @@
 uniform int u_lap;
 
-void main( out vec4 fragColor, in vec2 fragCoord ) {
+void main( ) {
     vec4 color;
 
     if (u_lap == 1){

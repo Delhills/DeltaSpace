@@ -183,7 +183,7 @@ void GUI::RenderGui()
 		}
 
 	}
-	std::cout << buttonPressed << "\n";
+
 	//shader->disable();
 
 	glEnable(GL_DEPTH_TEST);

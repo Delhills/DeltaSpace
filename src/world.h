@@ -34,7 +34,7 @@ public:
 	int currentLaps;
 	float countDown;
 	int totalLaps;
-	EntityMesh* goal;
+	Goal* goal;
 	std::vector<EntityMesh*> map;
 	std::vector<Obstacle*> obstacles;
 	EntityMesh* sky;
@@ -47,7 +47,6 @@ public:
 
 	World(const char* filename,Camera* camera, GUI* gui, const char* textureFile);
 	void renderMap();
-	void renderGoal();
 	void render();
 	void update(double seconds_elapsed);
 	void addObstacleMouse(eObstacleType type);
