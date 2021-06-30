@@ -11,6 +11,7 @@
 #include "includes.h"
 #include "framework.h"
 #include "extra/cJSON.h"
+#include "input.h"
 
 //General functions **************
 long getTime();

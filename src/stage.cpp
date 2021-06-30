@@ -10,28 +10,38 @@ Stage::Stage()
 	this->gui = NULL;
 }
 
+void Stage::goToMenuStage() {
+	Audio::Stop();
+	Game::instance->currentStage = eStageID::INTRO;
+}
 void Stage::NextStage() {
 	Game* game = Game::instance;
 	int stage = game->currentStage;
 	stage++;
 	Audio::Stop();
+	PlayStage* a;
 	switch (stage)
 	{
 	case INTRO:
 		break;
 	case LEVEL1:
+		a = (PlayStage*)game->stages[LEVEL1];
+		a->world->Restart();
 		Audio::Play(Songs[SAILOR]);
 		break;
 	case LEVEL2:
+		a = (PlayStage*)game->stages[LEVEL2];
+		a->world->Restart();
 		Audio::Play(Songs[EVA]);
 		break;
 	case LEVEL3:
+		a = (PlayStage*)game->stages[LEVEL3];
+		a->world->Restart();
 		Audio::Play(Songs[UNDER]);
 		break;
 	case END:
+		Audio::Play(Songs[CREDITS]);
 		break;
-	case EXIT:
-		game->must_exit = true;
 	}
 
 	game->currentStage = static_cast<eStageID>(stage);
@@ -53,7 +63,7 @@ MenuStage::MenuStage() {
 		Audio::Get(Songs[i]);
 	}
 
-	
+	buttonPressed = NO_BUTTON;
 	Texture* texture = Texture::Get("data/textures/person4.png");
 	Mesh* mesh = Mesh::Get("data/meshes/character.mesh");
 	Shader* shader = Shader::Get("data/shaders/skinning.vs", "data/shaders/texture.fs");
@@ -118,7 +128,28 @@ void MenuStage::Render()
 void MenuStage::Update(double seconds_elapsed) {
 
 	if (Input::wasKeyPressed(SDL_SCANCODE_Z)) NextStage();
-	if (Input::wasKeyPressed(SDL_SCANCODE_1)) {
+	//buttonPressed = gui->checkButtonClicked();
+
+	if (Input::wasMousePressed(1))
+	{
+		std::cout << "holi" << "\n";
+		buttonPressed = gui->buttonPressed;
+	}
+
+//	std::cout << buttonPressed << "\n";
+
+	switch (buttonPressed)
+	{
+	case MENU_PLAY:
+		std::cout << "play" << "\n";
+		NextStage();
+		break;
+	case MENU_EXIT:
+		std::cout << "exit" << "\n";
+		Game::instance->must_exit = true;
+		break;
+	case MENU_DANCE:
+		std::cout << "dance" << "\n";
 		this->dance = !this->dance;
 		if (this->dance)
 		{
@@ -127,25 +158,16 @@ void MenuStage::Update(double seconds_elapsed) {
 		else {
 			Audio::Stop();
 		}
+		break;
 	}
 
-	eButton button_pressed = gui->checkButtonClicked();
-	//std::cout << button_pressed << "\n";
-	switch (button_pressed)
-	{
-	case PLAY_M:
-		NextStage();
-		break;
-	case EXIT_M:
-		Game::instance->must_exit = true;
-		break;
-	}
+	buttonPressed = NO_BUTTON;
 }
 
- PlayStage::PlayStage(const char* filename) 
+ PlayStage::PlayStage(const char* filename, const char* textureFile)
  {
 	 this->gui = new GUI(eTypeGui::PAUSE_MENU);
-	 this->world = new World(filename,this->camera, this->gui);
+	 this->world = new World(filename,this->camera, this->gui, textureFile);
  }
 
 void PlayStage::Render() {
@@ -160,6 +182,12 @@ void PlayStage::Update(double seconds_elapsed) {
 		this->world->nextLevel = false;
 		NextStage();
 	}
+	else if (this->world->goToMenu)
+	{
+		//this->world->Restart();
+		goToMenuStage();
+	}
+	//std::cout << this->world->goToMenu << "\n";
 }
 
 
@@ -175,7 +203,15 @@ void EndStage::Render()
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	drawText(Game::instance->window_width / 2 - 300, Game::instance->window_height / 2 - 20, "Fin  ", Vector3(1, 1, 0), 10);
+	int h = Game::instance->window_height;
+	int w = Game::instance->window_width;
+
+	drawText(w / 2 - 300, h / 4 - 20, "Developers:", Vector3(1, 1, 0), 5);
+	drawText(w / 2 - 300, 2*h / 5 - 50, "Daniel Salvado", Vector3(1, 1, 0), 5);
+	drawText(w / 2 - 300, 2*h / 5, "Andrea Borrell", Vector3(1, 1, 0), 5);
+	drawText(w / 2 - 300, 2*h / 5 + 70, "Music:", Vector3(1, 1, 0), 5);
+	drawText(w / 2 - 300, 3*h / 5, "Rifat Yurham", Vector3(1, 1, 0), 5);
+
 
 	//swap between front buffer and back buffer
 	SDL_GL_SwapWindow(Game::instance->window);
@@ -183,6 +219,6 @@ void EndStage::Render()
 
 void EndStage::Update(double seconds_elapsed) {
 
-	if (Input::wasKeyPressed(SDL_SCANCODE_Z)) NextStage();
+	if (Input::wasKeyPressed(SDL_SCANCODE_Z)) Game::instance->must_exit = true;
 }
 

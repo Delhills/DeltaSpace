@@ -28,6 +28,7 @@ public:
 	bool alive;
 	bool pause;
 	bool nextLevel;
+	bool goToMenu;
 	float ground_timer;
 	float timer;
 	int currentLaps;
@@ -41,11 +42,12 @@ public:
 	Camera* camera; //our global camera
 	GUI* gui;
 	eButton buttonPressed;
+	const char* textureFile;
 	
 
-	World(const char* filename,Camera* camera, GUI* gui);
+	World(const char* filename,Camera* camera, GUI* gui, const char* textureFile);
 	void renderMap();
-	void renderGUI(float x, float y, float w, float h, bool flip, Texture* texture, Vector4 range);
+	void renderGoal();
 	void render();
 	void update(double seconds_elapsed);
 	void addObstacleMouse(eObstacleType type);
@@ -54,6 +56,7 @@ public:
 	bool onGround();
 	void RenderMinimap();
 	void SendFlying();
+	bool hasWon();
 	void Restart();
 	void onObstacle(eObstacleType type);
 	bool loadMap(const char* filename);

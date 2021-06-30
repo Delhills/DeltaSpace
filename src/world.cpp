@@ -11,7 +11,7 @@ float mouse_speed = 10.0f;
 
 World* World::instance = NULL;
 
-World::World(const char* filename,Camera* w_camera, GUI* gui) {
+World::World(const char* filename,Camera* w_camera, GUI* gui, const char* textureFile) {
 	countDown = 3.5;
 	timer = 0;
 	instance = this;
@@ -20,6 +20,8 @@ World::World(const char* filename,Camera* w_camera, GUI* gui) {
 	alive = true;
 	pause = false;
 	nextLevel = false;
+	goToMenu = false;
+	this->textureFile = textureFile;
 	ground_timer = 0;
 	currentLaps = 1;
 	totalLaps = 3;
@@ -28,10 +30,10 @@ World::World(const char* filename,Camera* w_camera, GUI* gui) {
 	
 	loadMap(filename);
 
-	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/goal.fs");
 	Vector4 color = Vector4(1, 1, 1, 1);
-	Texture* texture = Texture::Get("data/textures/meta.png");
-	Mesh* mesh = Mesh::Get("data/meshes/meta.obj");
+	Texture* texture = Texture::getWhiteTexture();
+	Mesh* mesh = Mesh::Get("data/meshes/goal.obj");
 	EntityMesh* goal = new EntityMesh(mesh, texture, shader, color);
 
 	EntityMesh* lastMap = map[map.size()-1];
@@ -39,7 +41,8 @@ World::World(const char* filename,Camera* w_camera, GUI* gui) {
 	float offset = -1*lastMap->mesh->box.halfsize.z;
 
 
-	goal->model.setTranslation(0, 0,position + offset);
+	goal->model.setTranslation(0, 0, position + offset);
+	
 	this->goal = goal;
 
 
@@ -47,7 +50,8 @@ World::World(const char* filename,Camera* w_camera, GUI* gui) {
 	Vector3 paddingPlayer = player.entity->mesh->box.halfsize;
 	player.entity->model.setTranslation(0, -13, 0);
 
-	texture = Texture::Get("data/textures/SkySkybox.png");
+	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+	texture = Texture::Get("data/textures/skybox.PNG");
 	mesh = Mesh::Get("data/meshes/esfera.obj");
 	sky = new EntityMesh(mesh, texture, shader, color);
 
@@ -94,12 +98,14 @@ void World::render() {
 
 
 	if (this->pause) {
+		drawText((windowWidth / 2) - 120, (windowHeight / 4), "Pausa ", Vector3(1, 1, 0), 10);
+		drawText((windowWidth / 2) - 280, (4 * windowHeight / 8) - 20, "PULSA ESC PARA CONTINUAR", Vector3(1, 1, 1), 4);
 		gui->RenderGui();
 	}
 	else {
 
 		renderObstacles();
-		goal->render();
+		renderGoal();
 		Matrix44 playerModel = player.entity->model;
 		if (ground_timer < 1.0) {
 			renderMap();
@@ -123,7 +129,7 @@ void World::render() {
 		{ 
 			std::string min_srt,sec_str;
 
-			drawText(windowWidth / 2 - 300, windowHeight / 2 - 20, "Has ganado ", Vector3(1, 1, 0), 10);
+			drawText(windowWidth / 2 - 300, windowHeight / 4, "Has ganado", Vector3(1, 1, 0), 10);
 
 			int minutes = (int)(timer / 60);
 			float seconds = timer - minutes * 60;
@@ -131,10 +137,11 @@ void World::render() {
 			if (seconds < 10) sec_str = "0";
 			sec_str += std::to_string(seconds);
 
-			drawText(windowWidth / 2 - 300, windowHeight / 2 + 80 , min_srt + ":" + sec_str, Vector3(1, 1, 1), 0.5*sin(Game::instance->time * PI)+3);
+			drawText(windowWidth / 2 - 300, windowHeight / 4 + 80 , min_srt + ":" + sec_str, Vector3(1, 1, 1), 0.5*sin(Game::instance->time * PI)+3);
 			gui->RenderGui();
 		}
 		else if (!alive) {
+			drawText(windowWidth / 2 - 300, windowHeight / 4, "Has perdido", Vector3(1, 1, 0), 10);
 			gui->RenderGui();
 		}
 
@@ -167,57 +174,22 @@ void World::renderMap() {
 
 }
 
-void World::renderGUI(float x, float y, float w, float h, bool flip, Texture* texture, Vector4 range) {
+void World::renderGoal() {
 
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC0_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		Matrix44 model = goal->model;
+		Shader* shader = goal->shader;
+		Mesh* mesh = goal->mesh;
+		//enable shader and pass uniforms
+		shader->enable();
+		shader->setUniform("u_model", model);
+		shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 
-	int width = Game::instance->window_width;
-	int height = Game::instance->window_height;
+		shader->setUniform("u_lap", currentLaps);
 
-	Camera cameraGUI;
-	cameraGUI.setOrthographic(0, width, height, 0, -1, 1);
-	cameraGUI.enable();
+		mesh->render(GL_TRIANGLES);
 
-
-	Mesh quad;
-	quad.createQuad(x, y, w, h, flip);
-
-	Vector2 mousepos = Input::mouse_position;
-	float halfW = w * 0.5;
-	float halfH = h * 0.5;
-	float min_x = x - halfW;
-	float min_y = y - halfH;
-	float max_x = x + halfW;
-	float max_y = y + halfH;
-
-	bool hover = mousepos.x > min_x && mousepos.y > min_y && mousepos.x < max_x && mousepos.y < max_y;
-
-	if (hover && Input::isMousePressed(1)) Restart();
-	
-
-	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/gui.fs");
-
-	shader->enable();
-
-	shader->setUniform("u_texture_tiling", 1.0f);
-	Matrix44 quadModel;
-	shader->setUniform("u_model", quadModel);
-	shader->setUniform("u_viewprojection", cameraGUI.viewprojection_matrix);
-	shader->setTexture("u_texture", texture, 0);
-	shader->setUniform("u_color", Vector4(1, 1, 1, 1));
-	shader->setUniform("u_tex_range", hover ? range + Vector4(0.1035, 0, 0, 0) : range);
-
-	quad.render(GL_TRIANGLES);
-
-	shader->disable();
-
-
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-	glDisable(GL_BLEND);
+		//disable the shader after finishing rendering
+		shader->disable();
 }
 
 void World::renderObstacles() {
@@ -303,13 +275,17 @@ void World::addObstacleMouse(eObstacleType type) {
 }
 
 void World::update(double seconds_elapsed) {
-	
+
 	if (this->countDown >= 0.0)
 	{	
 		this->countDown = this->countDown - 1 * seconds_elapsed;
 		return;
 	}
 
+	if (goToMenu)
+	{
+		return;
+	}
 	bool mouse_locked = Game::instance->mouse_locked;
 	float camSpeed = seconds_elapsed * mouse_speed; //the speed is defined by the seconds_elapsed so it goes constant
 	
@@ -321,22 +297,30 @@ void World::update(double seconds_elapsed) {
 		this->pause = !this->pause;
 	}
 	if (Input::wasKeyPressed(SDL_SCANCODE_3)) this->done = !this->done;
-	//std::cout << this->pause << "\n";
+	
+	//std::cout << buttonPressed << "\n";
 
-	buttonPressed = gui->checkButtonClicked();
-	if (this->pause || !alive) {
+	if (Input::wasMousePressed(1))
+	{
+		std::cout << "holi" << "\n";
+		buttonPressed = gui->buttonPressed;
+	}
+	if (this->pause || !alive || done) {
 		switch (buttonPressed)
 		{
-		case REPLAY:
+		case PAUSE_REPLAY:
 			Restart();
 			break;
-		case NEXT:
+		case PAUSE_NEXT:
 			this->nextLevel = true;
 			break;
-		case EXIT_N:
-			Game::instance->must_exit = true;
+		case PAUSE_EXIT:
+			//Game::instance->must_exit = true;
+			this->goToMenu = true;
+			this->goToMenu = true;
 			break;
 		}
+		buttonPressed = NO_BUTTON;
 		if (this->pause)
 		{
 			return;
@@ -377,7 +361,12 @@ void World::update(double seconds_elapsed) {
 		return;
 	}
 	
-	player.max_speed += seconds_elapsed;
+	if (player.max_speed < 100) {
+		player.max_speed += seconds_elapsed;
+	}
+	else {
+		player.max_speed += seconds_elapsed*0.3;
+	}
 	if (freecam)
 	{
 		if (Input::isKeyPressed(SDL_SCANCODE_LSHIFT)) camSpeed *= 10; //move faster with left shift
@@ -425,8 +414,8 @@ void World::update(double seconds_elapsed) {
 
 		}
 	}
-	std::cout << "hola" << "\n";
-	if (checkCol(goal, player.pos)) {
+
+	if (hasWon()) {
 		std::cout << "ole muy bien!" << "\n";
 		if (currentLaps < totalLaps) 
 		{
@@ -474,6 +463,11 @@ void World::SendFlying() {
 	player.entity->model.translate(top.x, top.y, top.z);
 	player.entity->model.rotate(DEG2RAD / 4, Vector3(1, 1, 1));
 
+}
+
+bool World::hasWon()
+{
+	return alive && player.pos.z < goal->model.getTranslation().z;
 }
 
 bool World::onGround() {
@@ -539,6 +533,7 @@ void World::Restart() {
 	done = false;
 	alive = true;
 	pause = false;
+	goToMenu = false;
 	ground_timer = 0.0;
 	timer = 0.0;
 	currentLaps = 1;
@@ -611,7 +606,7 @@ void World::addMap(Vector4 type, int pos)
 
 void World::addPart(Mesh* mesh, int pos) {
 
-	Texture* texture = Texture::Get("data/textures/export.png");
+	Texture* texture = Texture::Get(textureFile);
 	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 	Vector4 color = Vector4(1, 1, 1, 1);
 	EntityMesh* map_part = new EntityMesh(mesh, texture, shader, color);

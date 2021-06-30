@@ -72,9 +72,9 @@ public:
 	//keyboard state
 	static const Uint8* keystate;
 	static Uint8 prev_keystate[SDL_NUM_SCANCODES]; //previous before
-
 	//mouse state
 	static int mouse_state; //tells which buttons are pressed
+	static int prev_mouse_state; //tells which buttons are pressed
 	static Vector2 mouse_position; //last mouse position
 	static Vector2 mouse_delta; //mouse movement in the last frame
 	static float mouse_wheel;
@@ -87,13 +87,13 @@ public:
 
 	//gamepad state
 	static GamepadState gamepads[4];
-
 	//gamepad
 	static bool isButtonPressed(int button, int pad = 0) { return gamepads[pad].isButtonPressed(button); }
 	static bool wasButtonPressed(int button, int pad = 0) { return gamepads[pad].wasButtonPressed(button); }
 
 	//mouse
 	static bool isMousePressed(int button) { return mouse_state & SDL_BUTTON(button); } //button could be SDL_BUTTON_LEFT
+	static bool wasMousePressed(int button) { return (prev_mouse_state & SDL_BUTTON(button)) && !(mouse_state & SDL_BUTTON(button)); }
 	static void centerMouse();
 
 	static void init( SDL_Window* window );

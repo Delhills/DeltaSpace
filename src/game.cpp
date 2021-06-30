@@ -43,9 +43,9 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	
 	
 	this->stages.push_back(new MenuStage());
-	this->stages.push_back(new PlayStage("data/levels/level1.json"));
-	this->stages.push_back(new PlayStage("data/levels/level2.json"));
-	this->stages.push_back(new PlayStage("data/levels/level3.json"));
+	this->stages.push_back(new PlayStage("data/levels/level1.json", "data/textures/lvl1.png"));
+	this->stages.push_back(new PlayStage("data/levels/level2.json", "data/textures/lvl2.png"));
+	this->stages.push_back(new PlayStage("data/levels/level3.json", "data/textures/lvl3.png"));
 	this->stages.push_back(new EndStage());
 
 	this->currentStage = INTRO;

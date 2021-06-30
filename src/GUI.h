@@ -13,16 +13,13 @@ enum eTypeGui {
 };
 
 enum eButton {
-	PLAY,
-	PLAY_M,
-	REPLAY,
-	NEXT,
-	EXIT_N,
-	EXIT_M,
-	ACCEPT,
-	WINDOW,
-	NO_BUTTON,
-	TUTORIAL
+	MENU_PLAY,
+	MENU_EXIT,
+	MENU_DANCE,
+	PAUSE_REPLAY,
+	PAUSE_NEXT,
+	PAUSE_EXIT,
+	NO_BUTTON
 };
 
 class GUI
@@ -33,7 +30,8 @@ public:
 	std::vector<eButton> buttons;
 	Texture* atlas;
 	eButton buttonPressed;
-	bool hover;
+	//bool hover;
+
 
 	GUI() {};
 	GUI(eTypeGui type);

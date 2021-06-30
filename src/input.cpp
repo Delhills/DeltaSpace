@@ -5,6 +5,7 @@ Uint8 Input::prev_keystate[SDL_NUM_SCANCODES]; //previous before
 
 //mouse state
 int Input::mouse_state; //tells which buttons are pressed
+int Input::prev_mouse_state; //tells which buttons are pressed
 Vector2 Input::mouse_position; //last mouse position
 Vector2 Input::mouse_delta; //mouse movement in the last frame
 float Input::mouse_wheel;
@@ -44,6 +45,7 @@ void Input::update()
 
 	//get mouse position and delta (do after pump events)
 	int x, y;
+	Input::prev_mouse_state = Input::mouse_state;
 	Input::mouse_state = SDL_GetMouseState(&x, &y);
 	Input::mouse_delta.set(Input::mouse_position.x - x, Input::mouse_position.y - y);
 	Input::mouse_position.set((float)x, (float)y);

@@ -7,7 +7,7 @@
 #include "utils.h"
 
 
-constexpr auto numSongs = 5;
+constexpr auto numSongs = 6;
 
 static char* Songs[numSongs] =
 {
@@ -15,7 +15,8 @@ static char* Songs[numSongs] =
 	"data/sound/level1.mp3",
 	"data/sound/choque.mp3",
 	"data/sound/level2.mp3",
-	"data/sound/level3.mp3"
+	"data/sound/level3.mp3",
+	"data/sound/credits.mp3"
 };
 
 enum eSongs {
@@ -23,7 +24,8 @@ enum eSongs {
 	SAILOR,
 	COLISION,
 	EVA,
-	UNDER
+	UNDER,
+	CREDITS
 };
 
 class Audio

@@ -7,15 +7,16 @@ enum eStageID {
 	LEVEL1,
 	LEVEL2,
 	LEVEL3,
-	END,
-	EXIT
+	END
 };
 class Stage
 {
 public:
 	Camera* camera;
 	GUI* gui;
+	eButton buttonPressed;
 	Stage();
+	void goToMenuStage();
 	void NextStage();
 	virtual void Render() {};
 	virtual void Update(double seconds_elapsed) {};
@@ -37,7 +38,7 @@ public:
 class PlayStage : public Stage {
 public:
 	World* world;
-	PlayStage(const char* filename);
+	PlayStage(const char* filename, const char* textureFile);
 	void Render();
 	void Update(double seconds_elapsed);
 };
