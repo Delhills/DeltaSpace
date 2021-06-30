@@ -108,6 +108,8 @@ void MenuStage::Render()
 	
 	camera->rotate(DEG2RAD * camera_move, Vector3(0, 0, 1));
 	
+	drawText(0, 0, "Do not press 1:", Vector3(1, 1, 1), 0.7);
+
 	Animation* fall = Animation::Get("data/anims/animations_falling.skanim");
 	Animation* flair = Animation::Get("data/anims/animations_flair.skanim");
 
@@ -178,6 +180,8 @@ void MenuStage::Update(double seconds_elapsed)
 	}
 
 	buttonPressed = NO_BUTTON;
+
+	if (Input::wasKeyPressed(SDL_SCANCODE_1)) Audio::Play(Songs[DONOT]);
 }
 
 TutorialStage::TutorialStage() 
