@@ -52,6 +52,34 @@ void Stage::NextStage() {
 	game->onResize(game->window_width, game->window_height);
 }
 
+void Stage::changeStage(eStageID nextstage) {
+	Game* game = Game::instance;
+	Audio::Stop();
+	PlayStage* a;
+	switch (nextstage)
+	{
+	case LEVEL1:
+		a = (PlayStage*)game->stages[LEVEL1];
+		a->world->Restart();
+		Audio::Play(Songs[SAILOR]);
+		break;
+	case LEVEL2:
+		a = (PlayStage*)game->stages[LEVEL2];
+		a->world->Restart();
+		Audio::Play(Songs[EVA]);
+		break;
+	case LEVEL3:
+		a = (PlayStage*)game->stages[LEVEL3];
+		a->world->Restart();
+		Audio::Play(Songs[UNDER]);
+		break;
+	}
+
+	game->currentStage = static_cast<eStageID>(nextstage);
+	//Como usamos diferentes camaras en cada stage hay que ponerla al dia con las dimensiones 
+	game->onResize(game->window_width, game->window_height);
+}
+
 MenuStage::MenuStage()
 {
 
@@ -105,10 +133,14 @@ void MenuStage::Render()
 	skymodel.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
 	sky->render(skymodel);
 	glEnable(GL_DEPTH_TEST);
+	float time = Game::instance->time;
 	
 	camera->rotate(DEG2RAD * camera_move, Vector3(0, 0, 1));
 	
-	drawText(0, 0, "Do not press 1:", Vector3(1, 1, 1), 0.7);
+	drawText(0, 0, "No pulses 1:", Vector3(1, 1, 1), 0.9);
+
+	float i = sin(time * PI);
+	drawText(320, 50, "DELTASPACE", Vector3(0.3, 0.1, 1), 7 + i);
 
 	Animation* fall = Animation::Get("data/anims/animations_falling.skanim");
 	Animation* flair = Animation::Get("data/anims/animations_flair.skanim");
@@ -128,9 +160,7 @@ void MenuStage::Render()
 	//creamos esqueleto intermedio para contener la postura blendeada
 	Skeleton blended_skeleton;
 
-
-	float time = Game::instance->time;
-	float i = 0.3 * sin(time * PI) - 0.3;
+	i = 0.3 * sin(time * PI) - 1.5;
 	//std::cout << i << "\n";
 	person.model.setTranslation(camera->center.x+0.6, camera->center.y+ i, camera->center.z);
 
@@ -150,7 +180,6 @@ void MenuStage::Update(double seconds_elapsed)
 
 	if (Input::wasMousePressed(1))
 	{
-		std::cout << "holi" << "\n";
 		buttonPressed = gui->buttonPressed;
 	}
 
@@ -159,15 +188,15 @@ void MenuStage::Update(double seconds_elapsed)
 	switch (buttonPressed)
 	{
 	case MENU_PLAY:
-		std::cout << "play" << "\n";
+
 		NextStage();
 		break;
 	case MENU_EXIT:
-		std::cout << "exit" << "\n";
+
 		Game::instance->must_exit = true;
 		break;
 	case MENU_DANCE:
-		std::cout << "dance" << "\n";
+
 		this->dance = !this->dance;
 		if (this->dance)
 		{
@@ -181,17 +210,28 @@ void MenuStage::Update(double seconds_elapsed)
 
 	buttonPressed = NO_BUTTON;
 
-	if (Input::wasKeyPressed(SDL_SCANCODE_1)) Audio::Play(Songs[DONOT]);
+	if (Input::wasKeyPressed(SDL_SCANCODE_1)) {
+		this->dance = !this->dance;
+		if (this->dance)
+		{
+			Audio::Play(Songs[DONOT]);
+		}
+		else {
+			Audio::Stop();
+		}
+	};
 }
 
 TutorialStage::TutorialStage() 
 {
 	camera_move = 0;
+	buttonPressed = NO_BUTTON;
 	this->gui = new GUI(eTypeGui::END_MENU);
 	Shader* shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 	Texture* texture = Texture::Get("data/textures/skybox.PNG");
 	Mesh* mesh = Mesh::Get("data/meshes/esfera.obj");
 	Vector4 color = Vector4(1, 1, 1, 1);
+	this->gui = new GUI(eTypeGui::TUTORIAL_MENU);
 	this->sky = new EntityMesh(mesh, texture, shader, color);
 	this->camera->lookAt(Vector3(0.f, 2.0f, 2.0f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
 	this->camera->setPerspective(70.f, Game::instance->window_width / (float)Game::instance->window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
@@ -199,6 +239,9 @@ TutorialStage::TutorialStage()
 
 void TutorialStage::Render() 
 {
+
+	int h = Game::instance->window_height;
+	int w = Game::instance->window_width;
 	camera->enable();
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 
@@ -218,13 +261,41 @@ void TutorialStage::Render()
 
 	camera->rotate(DEG2RAD * camera_move, Vector3(0, 0, 1));
 
+	drawText(w / 2 - 350, 2 * h / 6 - 100,"W para acelerar", Vector3(1, 1, 1), 4);
+	drawText(w / 2 - 350, 2 * h / 6 - 50, "A/D para girar a izquierda/derecha", Vector3(1, 1, 1), 4);
+	drawText(w / 2 - 350, 2 * h / 6, "S para frenar y marcha atras", Vector3(1, 1, 1), 4);
+	drawText(w / 2 - 350, 2 * h / 6 + 50, "ESC para poner pausa", Vector3(1, 1, 1), 4);
+	drawText(w / 2 - 350, 2 * h / 6 + 130, "Selecciona un nivel:", Vector3(1, 1, 1), 4);
+	
+	gui->RenderGui();
+
 	SDL_GL_SwapWindow(Game::instance->window);
 }
 
 void TutorialStage::Update(double seconds_elapsed) 
 {
 	camera_move = seconds_elapsed * 10;
-	if (Input::wasKeyPressed(SDL_SCANCODE_Z)) NextStage();
+	//if (Input::wasKeyPressed(SDL_SCANCODE_Z)) NextStage();
+	Game* game = Game::instance;
+
+	if (Input::wasMousePressed(1))
+	{
+		buttonPressed = gui->buttonPressed;
+	}
+
+	switch (buttonPressed)
+	{
+		case BUTTON_LEVEL1:
+			changeStage(LEVEL1);
+			break;
+		case BUTTON_LEVEL2:
+			changeStage(LEVEL2);
+			break;
+		case BUTTON_LEVEL3:
+			changeStage(LEVEL3);
+			break;
+	}
+	buttonPressed = NO_BUTTON;
 
 }
 
@@ -294,10 +365,10 @@ void EndStage::Render()
 	int w = Game::instance->window_width;
 
 
-	drawText(w / 2 - 300, h / 4 - 20, "Developers:", Vector3(1, 1, 0), 5);
+	drawText(w / 2 - 300, h / 4 - 20, "Desarrolladores:", Vector3(1, 1, 0), 5);
 	drawText(w / 2 - 300, 2*h / 5 - 50, "Daniel Salvado", Vector3(1, 1, 0), 5);
 	drawText(w / 2 - 300, 2*h / 5, "Andrea Borrell", Vector3(1, 1, 0), 5);
-	drawText(w / 2 - 300, 2*h / 5 + 70, "Music:", Vector3(1, 1, 0), 5);
+	drawText(w / 2 - 300, 2*h / 5 + 70, "Musica:", Vector3(1, 1, 0), 5);
 	drawText(w / 2 - 300, 3*h / 5, "Rifat Yurham", Vector3(1, 1, 0), 5);
 
 

@@ -21,6 +21,7 @@ public:
 	Stage();
 	void goToMenuStage();
 	void NextStage();
+	void changeStage(eStageID nextstage);
 	virtual void Render() {};
 	virtual void Update(double seconds_elapsed) {};
 };
